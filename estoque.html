@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Mary Boutique - Estoque</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+
+
+<!-- =========================
+     CABEÇALHO
+========================== -->
+
+<header class="topbar">
+
+    <div class="topbar-content">
+
+        <div class="brand brand-small">
+
+            <span class="brand-name">
+                Mary
+            </span>
+
+            <span class="brand-subtitle">
+                BOUTIQUE
+            </span>
+
+        </div>
+
+
+        <button
+            id="logout-button"
+            class="btn-logout"
+        >
+            Sair
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     CONTEÚDO
+========================== -->
+
+<main class="container">
+
+
+    <!-- CABEÇALHO DA PÁGINA -->
+
+    <section class="page-header">
+
+        <div>
+
+            <p class="section-label">
+                MARY BOUTIQUE
+            </p>
+
+            <h1>
+                Estoque
+            </h1>
+
+            <p>
+                Gerencie suas peças de forma simples e organizada.
+            </p>
+
+        </div>
+
+
+        <button
+            id="open-modal-button"
+            class="btn-primary"
+        >
+            + Adicionar produto
+        </button>
+
+    </section>
+
+
+
+    <!-- =========================
+         RESUMO
+    ========================== -->
+
+    <section class="summary">
+
+
+        <div class="summary-card">
+
+            <span class="summary-label">
+                Produtos
+            </span>
+
+            <strong id="total-products">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="summary-label">
+                Peças em estoque
+            </span>
+
+            <strong id="total-stock">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="summary-label">
+                Valor do estoque
+            </span>
+
+            <strong id="total-value">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================
+         PESQUISA
+    ========================== -->
+
+    <section class="search-section">
+
+        <input
+            type="text"
+            id="search-input"
+            placeholder="🔎  Pesquisar produto, categoria, tamanho ou cor..."
+        >
+
+    </section>
+
+
+
+    <!-- =========================
+         PRODUTOS
+    ========================== -->
+
+    <section>
+
+        <div
+            id="products-grid"
+            class="products-grid"
+        >
+        </div>
+
+
+        <div
+            id="empty-message"
+            class="empty-message"
+        >
+
+            <div class="empty-icon">
+                ♡
+            </div>
+
+            <h3>
+                Nenhum produto cadastrado
+            </h3>
+
+            <p>
+                Comece adicionando a primeira peça ao estoque.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =========================
+     MODAL DE PRODUTO
+========================== -->
+
+<div
+    id="product-modal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+
+        <!-- CABEÇALHO -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <p class="section-label">
+                    MARY BOUTIQUE
+                </p>
+
+                <h2 id="modal-title">
+                    Adicionar produto
+                </h2>
+
+            </div>
+
+
+            <button
+                id="close-modal-button"
+                class="close-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- FORMULÁRIO -->
+
+        <form id="product-form">
+
+            <input
+                type="hidden"
+                id="product-id"
+            >
+
+
+
+            <!-- IMAGEM -->
+
+            <div class="image-upload">
+
+                <div
+                    id="image-preview"
+                    class="image-preview"
+                >
+
+                    <span>
+                        ♡
+                    </span>
+
+                    <p>
+                        Adicione uma foto da peça
+                    </p>
+
+                </div>
+
+
+                <label
+                    for="image-input"
+                    class="upload-button"
+                >
+                    Escolher imagem
+                </label>
+
+
+                <input
+                    type="file"
+                    id="image-input"
+                    accept="image/*"
+                    hidden
+                >
+
+            </div>
+
+
+
+            <!-- NOME -->
+
+            <div class="input-group">
+
+                <label for="product-name">
+                    Nome do produto
+                </label>
+
+                <input
+                    type="text"
+                    id="product-name"
+                    placeholder="Ex: Vestido floral"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- CATEGORIA / TAMANHO -->
+
+            <div class="form-row">
+
+
+                <div class="input-group">
+
+                    <label for="product-category">
+                        Categoria
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-category"
+                        placeholder="Ex: Vestido"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="product-size">
+                        Tamanho
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-size"
+                        placeholder="Ex: M"
+                    >
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- COR / QUANTIDADE -->
+
+            <div class="form-row">
+
+
+                <div class="input-group">
+
+                    <label for="product-color">
+                        Cor
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-color"
+                        placeholder="Ex: Rosa"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="product-quantity">
+                        Quantidade
+                    </label>
+
+                    <input
+                        type="number"
+                        id="product-quantity"
+                        min="0"
+                        value="0"
+                        required
+                    >
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PREÇO -->
+
+            <div class="input-group">
+
+                <label for="product-price">
+                    Preço
+                </label>
+
+                <input
+                    type="number"
+                    id="product-price"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ex: 89.90"
+                >
+
+            </div>
+
+
+
+            <!-- SALVAR -->
+
+            <button
+                type="submit"
+                class="btn-primary full-button"
+                id="save-product-button"
+            >
+                Salvar produto
+            </button>
+
+
+            <p
+                id="product-message"
+                class="message"
+            >
+            </p>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+<script src="js/estoque.js"></script>
+
+
+</body>
+
+</html>
