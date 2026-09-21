@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mary Boutique - Vendas</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <div class="topbar-brand">
+
+        <span>Mary</span>
+
+        <small>BOUTIQUE</small>
+
+    </div>
+
+
+    <nav class="main-nav">
+
+        <a href="estoque.html">
+            Estoque
+        </a>
+
+        <a
+            href="vendas.html"
+            class="active"
+        >
+            Vendas
+        </a>
+
+    </nav>
+
+
+    <button
+        id="logout-button"
+        class="logout-button"
+    >
+        Sair
+    </button>
+
+</header>
+
+
+<main class="page-container">
+
+
+    <!-- =====================================================
+         CABEÇALHO
+    ====================================================== -->
+
+    <section class="page-header">
+
+        <div>
+
+            <span class="section-label">
+                MARY BOUTIQUE
+            </span>
+
+            <h1>
+                Vendas
+            </h1>
+
+            <p>
+                Registre vendas e acompanhe seus fiados.
+            </p>
+
+        </div>
+
+
+        <div class="page-header-actions">
+
+            <button
+                id="open-report-button"
+                class="secondary-button"
+                type="button"
+            >
+                ↓ Relatórios
+            </button>
+
+
+            <button
+                id="open-sale-button"
+                class="primary-button"
+                type="button"
+            >
+                + Nova venda
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RESUMO
+    ====================================================== -->
+
+    <section class="summary-grid">
+
+        <div class="summary-card">
+
+            <span>
+                Vendas hoje
+            </span>
+
+            <strong id="sales-today">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Vendas realizadas
+            </span>
+
+            <strong id="sales-count">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Fiado em aberto
+            </span>
+
+            <strong id="pending-value">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ABAS
+    ====================================================== -->
+
+    <div class="sales-tabs">
+
+        <button
+            id="tab-sales"
+            class="tab-button active"
+            type="button"
+        >
+            Todas as vendas
+        </button>
+
+
+        <button
+            id="tab-pending"
+            class="tab-button"
+            type="button"
+        >
+            Fiados
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         PESQUISA
+    ====================================================== -->
+
+    <section class="search-section">
+
+        <input
+            type="text"
+            id="sales-search"
+            placeholder="Pesquisar cliente..."
+        >
+
+    </section>
+
+
+    <!-- =====================================================
+         LISTA
+    ====================================================== -->
+
+    <section
+        id="sales-list"
+        class="sales-list"
+    ></section>
+
+
+</main>
+
+
+<!-- =========================================================
+     MODAL NOVA VENDA
+========================================================= -->
+
+<div
+    id="sale-modal"
+    class="modal"
+>
+
+    <div class="modal-content large-modal">
+
+        <button
+            id="close-sale-modal"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+
+        <h2>
+            Nova venda
+        </h2>
+
+
+        <form id="sale-form">
+
+
+            <div class="input-group">
+
+                <label>
+                    Nome do cliente
+                </label>
+
+                <input
+                    type="text"
+                    id="customer-name"
+                    placeholder="Nome do cliente"
+                    required
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Telefone
+                </label>
+
+                <input
+                    type="text"
+                    id="customer-phone"
+                    placeholder="Opcional"
+                >
+
+            </div>
+
+
+            <div class="sale-product-selector">
+
+                <div class="input-group">
+
+                    <label>
+                        Produto
+                    </label>
+
+                    <select id="sale-product">
+
+                        <option value="">
+                            Selecione um produto
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>
+                        Quantidade
+                    </label>
+
+                    <input
+                        type="number"
+                        id="sale-quantity"
+                        value="1"
+                        min="1"
+                    >
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="add-sale-product"
+                    class="secondary-button"
+                >
+                    Adicionar
+                </button>
+
+            </div>
+
+
+            <div
+                id="sale-items"
+                class="sale-items"
+            >
+
+                <p class="empty-sale">
+                    Nenhum produto adicionado.
+                </p>
+
+            </div>
+
+
+            <div class="sale-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="sale-total">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Forma de pagamento
+                </label>
+
+                <select id="payment-method">
+
+                    <option value="pix">
+                        Pix
+                    </option>
+
+                    <option value="dinheiro">
+                        Dinheiro
+                    </option>
+
+                    <option value="cartao">
+                        Cartão
+                    </option>
+
+                    <option value="fiado">
+                        Fiado
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Observação
+                </label>
+
+                <textarea
+                    id="sale-observation"
+                    placeholder="Ex: Pagará no sábado..."
+                ></textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-button"
+                id="save-sale-button"
+            >
+                Registrar venda
+            </button>
+
+
+            <p
+                id="sale-message"
+                class="message"
+            ></p>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL DETALHES
+========================================================= -->
+
+<div
+    id="details-modal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+        <button
+            id="close-details-modal"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+
+        <div id="sale-details"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL RELATÓRIOS
+========================================================= -->
+
+<div
+    id="report-modal"
+    class="modal"
+>
+
+    <div class="modal-content report-modal-content">
+
+        <button
+            id="close-report-modal"
+            class="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+
+        <span class="section-label">
+            MARY BOUTIQUE
+        </span>
+
+
+        <h2>
+            Relatórios
+        </h2>
+
+
+        <p class="report-description">
+            Escolha o período e o tipo de venda que deseja
+            incluir no relatório.
+        </p>
+
+
+        <!-- PERÍODO -->
+
+        <div class="report-form-row">
+
+            <div class="input-group">
+
+                <label for="report-start-date">
+                    Data inicial
+                </label>
+
+                <input
+                    type="date"
+                    id="report-start-date"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="report-end-date">
+                    Data final
+                </label>
+
+                <input
+                    type="date"
+                    id="report-end-date"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="input-group">
+
+            <label for="report-status">
+                Vendas
+            </label>
+
+            <select id="report-status">
+
+                <option value="todas">
+                    Todas as vendas
+                </option>
+
+                <option value="pagas">
+                    Apenas pagas
+                </option>
+
+                <option value="pendentes">
+                    Apenas fiados em aberto
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- RESUMO -->
+
+        <div
+            id="report-preview"
+            class="report-preview"
+        >
+
+            <div>
+
+                <span>
+                    Vendas
+                </span>
+
+                <strong id="report-count">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="report-total">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Fiado
+                </span>
+
+                <strong id="report-pending">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTÕES -->
+
+        <div class="report-actions">
+
+            <button
+                id="export-excel-button"
+                class="secondary-button report-button"
+                type="button"
+            >
+                📊 Baixar Excel
+            </button>
+
+
+            <button
+                id="export-pdf-button"
+                class="primary-button report-button"
+                type="button"
+            >
+                📄 Baixar PDF
+            </button>
+
+        </div>
+
+
+        <p
+            id="report-message"
+            class="message"
+        ></p>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BIBLIOTECAS
+========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Excel -->
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<!-- PDF -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- =========================================================
+     SCRIPTS DO PROJETO
+========================================================= -->
+
+<script src="supabase.js"></script>
+
+<script src="js/vendas.js"></script>
+
+
+</body>
+
+</html>
