@@ -1,106 +1,115 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>Mary Boutique - Login</title>
+    <title>Mary Boutique - Login</title>
 
-<link rel="stylesheet" href="css/style.css">
-
+    <link rel="stylesheet" href="css/style.css">
 
 </head>
 
 <body class="login-page">
 
+    <main class="login-container">
 
-<main class="login-container">
+        <div class="login-card">
 
-    <div class="login-box">
+            <div class="brand-logo">
 
-        <div class="brand">
-            <span class="brand-name">Mary</span>
-            <span class="brand-subtitle">BOUTIQUE</span>
-        </div>
+                <span>Mary</span>
 
-        <p class="login-subtitle">
-            Controle de estoque
-        </p>
-
-        <div class="brand-divider">
-            <span></span>
-            <i>◆</i>
-            <span></span>
-        </div>
-
-        <form id="login-form">
-
-            <div class="input-group">
-
-                <label for="email">
-                    E-mail
-                </label>
-
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Digite seu e-mail"
-                    autocomplete="email"
-                    required
-                >
+                <small>BOUTIQUE</small>
 
             </div>
 
 
-            <div class="input-group">
+            <div class="divider"></div>
 
-                <label for="password">
-                    Senha
-                </label>
 
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Digite sua senha"
-                    autocomplete="current-password"
-                    required
+            <p class="login-subtitle">
+                Controle de estoque e vendas
+            </p>
+
+
+            <form id="login-form">
+
+                <div class="input-group">
+
+                    <label for="email">
+                        E-mail
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="password">
+                        Senha
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Digite sua senha"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    id="login-button"
+                    class="primary-button"
                 >
-
-            </div>
-
-
-            <button
-                type="submit"
-                class="btn-primary"
-                id="login-button"
-            >
-                Entrar
-            </button>
+                    Entrar
+                </button>
 
 
-            <p id="login-message" class="message"></p>
+                <p
+                    id="login-message"
+                    class="message"
+                ></p>
 
-        </form>
-
-        <p class="login-footer">
-            Seu estilo, sua essência, sua melhor versão.
-        </p>
-
-    </div>
-
-</main>
+            </form>
 
 
-<!-- SUPABASE -->
+            <p class="login-footer">
+                Seu estilo, sua essência, sua melhor versão.
+            </p>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        </div>
 
-<script src="supabase.js"></script>
-<script src="js/login.js"></script>
+    </main>
 
+
+    <!-- SUPABASE -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- CONFIGURAÇÃO -->
+
+    <script src="supabase.js"></script>
+
+    <!-- LOGIN -->
+
+    <script src="js/login.js"></script>
 
 </body>
 
