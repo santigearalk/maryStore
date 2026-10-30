@@ -1155,4 +1155,197 @@ td .acoes {
 @media (max-width: 950px) {
     .resumo-cards,
     .cards-resumo,
-    .
+    .dashboard-cards,
+    .metricas {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .produtos-grid,
+    .grid-produtos,
+    .lista-produtos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .vendas-lista,
+    .lista-vendas,
+    #lista-vendas {
+        grid-template-columns: 1fr;
+    }
+
+    .container,
+    main,
+    .conteudo-principal {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        font-size: 13px;
+    }
+
+    .container,
+    main,
+    .conteudo-principal {
+        padding: 14px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    .secao,
+    .painel,
+    .bloco {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .cabecalho-pagina,
+    .page-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .cabecalho-pagina > .btn,
+    .page-header > .btn {
+        width: 100%;
+    }
+
+    .resumo-cards,
+    .cards-resumo,
+    .dashboard-cards,
+    .metricas {
+        gap: 10px;
+    }
+
+    .card-resumo,
+    .resumo-card,
+    .metrica {
+        padding: 14px;
+    }
+
+    .card-resumo h2,
+    .card-resumo h3,
+    .resumo-card h2,
+    .resumo-card h3,
+    .metrica h2,
+    .metrica h3 {
+        font-size: 19px;
+    }
+
+    .produtos-grid,
+    .grid-produtos,
+    .lista-produtos {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid,
+    .formulario,
+    .grid-form {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .campo-completo {
+        grid-column: auto;
+    }
+
+    .acoes,
+    .grupo-acoes {
+        gap: 7px;
+    }
+
+    .acoes .btn,
+    .grupo-acoes .btn {
+        flex: 1;
+    }
+
+    .filtros,
+    .filtros-vendas,
+    .barra-filtros {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filtros input,
+    .filtros select,
+    .filtros-vendas input,
+    .filtros-vendas select,
+    .barra-filtros input,
+    .barra-filtros select {
+        width: 100%;
+    }
+
+    .modal,
+    .modal-overlay,
+    .fundo-modal {
+        align-items: flex-end;
+        padding: 8px;
+    }
+
+    .modal-conteudo,
+    .modal-content,
+    .modal-dialog {
+        max-height: 92vh;
+        padding: 19px;
+        border-radius: 18px 18px 10px 10px;
+    }
+
+    .modal-rodape,
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-rodape .btn,
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .resumo-parcelamento,
+    .detalhes-parcelamento,
+    .relatorio-resumo {
+        grid-template-columns: 1fr;
+    }
+
+    .parcela-card,
+    .item-parcela {
+        grid-template-columns: 1fr;
+    }
+
+    .parcela-card .btn,
+    .item-parcela .btn {
+        width: 100%;
+    }
+
+    th,
+    td {
+        padding: 10px;
+    }
+}
+
+/* ================= ACESSIBILIDADE ================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(217, 143, 145, 0.5);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
