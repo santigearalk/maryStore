@@ -1,48 +1,43 @@
-/* =========================================================
-   MARISTORE — ESTILIZAÇÃO DAS VENDAS
-   ========================================================= */
+/* =====================================================
+   MARY STORE — NOTURNO ROSÉ
+   Arquivo: css/style.css
+   ===================================================== */
 
 :root {
-    --cor-primaria: #8b5cf6;
-    --cor-primaria-hover: #7c3aed;
-    --cor-secundaria: #ec4899;
+    --fundo: #38292b;
+    --fundo-secundario: #443235;
+    --card: #594043;
+    --card-hover: #66494d;
 
-    --cor-fundo: #f8f7fc;
-    --cor-superficie: #ffffff;
-    --cor-superficie-hover: #faf8ff;
+    --rosa: #D98F91;
+    --rosa-claro: #F0B9B8;
+    --rosa-escuro: #B86F75;
 
-    --cor-texto: #27233a;
-    --cor-texto-secundario: #77738a;
+    --dourado: #C6A15B;
+    --dourado-claro: #E3C784;
 
-    --cor-borda: #e9e5f2;
+    --texto: #F8EEEE;
+    --texto-secundario: #D0BFC0;
 
-    --cor-sucesso: #16a34a;
-    --cor-sucesso-fundo: #dcfce7;
+    --borda: rgba(240, 185, 184, 0.18);
 
-    --cor-alerta: #d97706;
-    --cor-alerta-fundo: #fef3c7;
+    --sucesso: #8FC7A1;
+    --erro: #E58C91;
+    --alerta: #E5C17B;
+    --info: #A8C7E8;
 
-    --cor-erro: #dc2626;
-    --cor-erro-fundo: #fee2e2;
-
-    --cor-info: #2563eb;
-    --cor-info-fundo: #dbeafe;
-
-    --raio-pequeno: 8px;
-    --raio-medio: 12px;
+    --raio: 12px;
     --raio-grande: 18px;
 
-    --sombra-card: 0 4px 20px rgba(43, 28, 77, 0.05);
-    --sombra-modal: 0 20px 60px rgba(31, 20, 55, 0.18);
-
+    --sombra: 0 8px 25px rgba(20, 10, 12, 0.18);
     --transicao: 0.2s ease;
 }
 
-/* =========================================================
-   RESET
-   ========================================================= */
+/* ================= RESET ================= */
 
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -51,11 +46,10 @@ html {
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    font-family: "Inter", "Segoe UI", Arial, sans-serif;
-    background: var(--cor-fundo);
-    color: var(--cor-texto);
+    min-height: 100vh;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
 }
@@ -76,186 +70,255 @@ button:disabled {
     cursor: not-allowed;
 }
 
-input,
-select,
-textarea {
-    color: var(--cor-texto);
-}
-
 a {
-    color: var(--cor-primaria);
+    color: var(--rosa-claro);
     text-decoration: none;
 }
 
 img {
     max-width: 100%;
+    display: block;
 }
-
-/* =========================================================
-   ESTRUTURA PRINCIPAL
-   ========================================================= */
-
-.container,
-.container-vendas,
-.vendas-container {
-    width: min(1200px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 28px 0 48px;
-}
-
-main {
-    min-width: 0;
-}
-
-.secao,
-.secao-vendas,
-.card {
-    background: var(--cor-superficie);
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-grande);
-    box-shadow: var(--sombra-card);
-}
-
-.secao,
-.secao-vendas {
-    padding: 24px;
-    margin-bottom: 24px;
-}
-
-/* =========================================================
-   CABEÇALHOS
-   ========================================================= */
 
 h1,
 h2,
 h3,
 h4 {
-    margin-top: 0;
-    color: var(--cor-texto);
+    color: var(--texto);
     line-height: 1.3;
 }
 
 h1 {
-    font-size: clamp(24px, 4vw, 32px);
-    font-weight: 800;
-    letter-spacing: -0.8px;
+    font-size: 30px;
+    margin-bottom: 8px;
 }
 
 h2 {
-    font-size: 21px;
-    font-weight: 750;
-    letter-spacing: -0.4px;
+    font-size: 23px;
+    margin-bottom: 15px;
 }
 
 h3 {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 10px;
 }
 
 p {
-    color: var(--cor-texto-secundario);
+    color: var(--texto-secundario);
 }
 
-.titulo-pagina,
-.cabecalho-vendas,
-.header-vendas {
+/* ================= ESTRUTURA ================= */
+
+.container,
+main,
+.conteudo-principal {
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 25px;
+}
+
+.secao,
+.painel,
+.card,
+.bloco {
+    background: var(--card);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-grande);
+    box-shadow: var(--sombra);
+}
+
+.secao,
+.painel,
+.bloco {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+/* ================= CABEÇALHO ================= */
+
+header,
+.cabecalho,
+.header-principal {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
     flex-wrap: wrap;
-    margin-bottom: 28px;
+    gap: 18px;
 }
 
-.titulo-pagina h1,
-.cabecalho-vendas h1,
-.header-vendas h1 {
-    margin-bottom: 5px;
-}
-
-.subtitulo,
-.descricao-pagina {
-    color: var(--cor-texto-secundario);
-    margin: 0;
-}
-
-/* =========================================================
-   RESUMO E INDICADORES
-   ========================================================= */
-
-.resumo-vendas,
-.resumo-cards,
-.dashboard-cards,
-.cards-resumo {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-}
-
-.resumo-card,
-.card-resumo,
-.indicador-card {
-    min-width: 0;
-    background: var(--cor-superficie);
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-grande);
-    padding: 22px;
-    box-shadow: var(--sombra-card);
-    transition: transform var(--transicao),
-                box-shadow var(--transicao);
-}
-
-.resumo-card:hover,
-.card-resumo:hover,
-.indicador-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(43, 28, 77, 0.09);
-}
-
-.resumo-card p,
-.card-resumo p,
-.indicador-card p {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: var(--cor-texto-secundario);
-}
-
-.resumo-card h2,
-.resumo-card h3,
-.card-resumo h2,
-.card-resumo h3,
-.indicador-card h2,
-.indicador-card h3 {
-    margin: 0;
-    font-size: clamp(20px, 3vw, 27px);
+.logo,
+.logo h1 {
+    color: var(--rosa-claro);
     font-weight: 800;
-    overflow-wrap: anywhere;
+    letter-spacing: 1px;
 }
 
-.valor-total {
-    color: var(--cor-primaria);
+.cabecalho-pagina,
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 25px;
 }
 
-.valor-pago {
-    color: var(--cor-sucesso);
+.subtitulo {
+    color: var(--texto-secundario);
+    margin-top: 4px;
 }
 
-.valor-pendente {
-    color: var(--cor-alerta);
+/* ================= NAVEGAÇÃO ================= */
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-/* =========================================================
-   FORMULÁRIOS
-   ========================================================= */
+nav a,
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: var(--raio);
+    color: var(--texto-secundario);
+    transition: var(--transicao);
+}
+
+nav a:hover,
+nav a.ativo,
+.nav-link:hover,
+.nav-link.ativo {
+    background: rgba(217, 143, 145, 0.15);
+    color: var(--rosa-claro);
+}
+
+/* ================= BOTÕES ================= */
+
+.btn,
+button.btn,
+.btn-primario,
+.btn-secundario,
+.btn-excluir,
+.btn-editar,
+.btn-sucesso,
+.btn-perigo,
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--raio);
+    font-weight: 700;
+    text-align: center;
+    transition:
+        background var(--transicao),
+        border-color var(--transicao),
+        color var(--transicao),
+        transform var(--transicao);
+}
+
+.btn:active,
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-primario,
+.btn {
+    background: var(--rosa);
+    color: #321F22;
+}
+
+.btn-primario:hover,
+.btn:hover {
+    background: var(--rosa-claro);
+}
+
+.btn-secundario {
+    background: transparent;
+    border-color: var(--borda);
+    color: var(--texto);
+}
+
+.btn-secundario:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--rosa);
+}
+
+.btn-dourado {
+    background: var(--dourado);
+    color: #30221B;
+}
+
+.btn-dourado:hover {
+    background: var(--dourado-claro);
+}
+
+.btn-sucesso {
+    background: var(--sucesso);
+    color: #183524;
+}
+
+.btn-perigo,
+.btn-excluir {
+    background: #8F4249;
+    color: #fff;
+}
+
+.btn-perigo:hover,
+.btn-excluir:hover {
+    background: #AC5058;
+}
+
+.btn-editar {
+    background: rgba(198, 161, 91, 0.15);
+    color: var(--dourado-claro);
+    border-color: rgba(198, 161, 91, 0.35);
+}
+
+.btn-editar:hover {
+    background: rgba(198, 161, 91, 0.25);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--rosa-claro);
+    border-color: var(--rosa);
+}
+
+.btn-outline:hover {
+    background: rgba(217, 143, 145, 0.12);
+}
+
+.btn-pequeno,
+.btn-sm {
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.acoes,
+.grupo-acoes {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ================= FORMULÁRIOS ================= */
 
 form {
     width: 100%;
 }
 
+.form-grid,
 .formulario,
-.form-venda,
-.form-grid {
+.grid-form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
@@ -270,10 +333,8 @@ form {
     min-width: 0;
 }
 
-.campo label,
-.form-group label,
-.formulario-grupo label {
-    color: var(--cor-texto);
+label {
+    color: var(--texto);
     font-size: 13px;
     font-weight: 650;
 }
@@ -282,14 +343,31 @@ input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
     width: 100%;
-    min-height: 44px;
+    min-height: 43px;
     padding: 11px 13px;
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-medio);
-    background: #fff;
+    color: var(--texto);
+    background: var(--fundo-secundario);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
     outline: none;
-    transition: border-color var(--transicao),
-                box-shadow var(--transicao);
+    transition: var(--transicao);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #B7A2A4;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--rosa);
+    box-shadow: 0 0 0 3px rgba(217, 143, 145, 0.13);
+}
+
+select option {
+    background: var(--fundo-secundario);
+    color: var(--texto);
 }
 
 textarea {
@@ -297,336 +375,234 @@ textarea {
     resize: vertical;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-    border-color: var(--cor-primaria);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
-}
-
-input::placeholder,
-textarea::placeholder {
-    color: #aaa5b9;
-}
-
 input:disabled,
 select:disabled,
 textarea:disabled {
-    background: #f1eff6;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.campo-completo,
-.form-span-2 {
+.campo-completo {
     grid-column: 1 / -1;
 }
 
-/* =========================================================
-   BOTÕES
-   ========================================================= */
+/* ================= LOGIN ================= */
 
-button,
-.btn {
-    -webkit-tap-highlight-color: transparent;
-}
-
-.btn,
-.btn-primario,
-.btn-secundario,
-.btn-perigo,
-.btn-sucesso,
-.btn-outline,
-button[type="submit"] {
-    display: inline-flex;
+.login-container,
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 42px;
-    padding: 10px 16px;
-    border: 1px solid transparent;
-    border-radius: var(--raio-medio);
-    font-weight: 700;
+    padding: 22px;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(217, 143, 145, 0.12),
+            transparent 40%
+        ),
+        var(--fundo);
+}
+
+.login-card,
+.card-login {
+    width: 100%;
+    max-width: 420px;
+    padding: 36px;
+    background: var(--card);
+    border: 1px solid var(--borda);
+    border-radius: 22px;
+    box-shadow: var(--sombra);
+}
+
+.login-card h1,
+.card-login h1 {
     text-align: center;
-    transition: background var(--transicao),
-                color var(--transicao),
-                border-color var(--transicao),
-                transform var(--transicao);
+    color: var(--rosa-claro);
+    margin-bottom: 8px;
 }
 
-.btn:active,
-.btn-primario:active,
-.btn-secundario:active,
-.btn-perigo:active,
-.btn-sucesso:active {
-    transform: scale(0.98);
+.login-card .subtitulo,
+.card-login .subtitulo {
+    text-align: center;
+    margin-bottom: 25px;
 }
 
-.btn-primario,
-.btn,
-button[type="submit"] {
-    color: #fff;
-    background: var(--cor-primaria);
-}
-
-.btn-primario:hover,
-.btn:hover,
-button[type="submit"]:hover {
-    background: var(--cor-primaria-hover);
-}
-
-.btn-secundario {
-    color: var(--cor-texto);
-    background: #f1eef8;
-    border-color: var(--cor-borda);
-}
-
-.btn-secundario:hover {
-    background: #e8e2f4;
-}
-
-.btn-outline {
-    color: var(--cor-primaria);
-    background: transparent;
-    border-color: var(--cor-primaria);
-}
-
-.btn-outline:hover {
-    color: #fff;
-    background: var(--cor-primaria);
-}
-
-.btn-sucesso {
-    color: #fff;
-    background: var(--cor-sucesso);
-}
-
-.btn-sucesso:hover {
-    background: #15803d;
-}
-
-.btn-perigo {
-    color: #fff;
-    background: var(--cor-erro);
-}
-
-.btn-perigo:hover {
-    background: #b91c1c;
-}
-
-.btn-pequeno,
-.btn-sm {
-    min-height: 34px;
-    padding: 7px 11px;
-    font-size: 12px;
-}
-
-.acoes,
-.acoes-venda,
-.grupo-botoes {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-/* =========================================================
-   LISTA DE PRODUTOS DA VENDA
-   ========================================================= */
-
-.lista-produtos,
-.lista-itens-venda,
-.itens-venda {
+.login-card form,
+.card-login form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin: 18px 0;
+    gap: 17px;
 }
 
-.item-venda,
-.produto-venda,
-.item-produto-venda {
+.login-card button[type="submit"],
+.card-login button[type="submit"] {
+    width: 100%;
+    margin-top: 5px;
+}
+
+/* ================= RESUMO / DASHBOARD ================= */
+
+.resumo-cards,
+.cards-resumo,
+.dashboard-cards,
+.metricas {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: center;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
-    padding: 16px;
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-medio);
-    background: #fff;
+    margin-bottom: 25px;
 }
 
-.item-venda:hover,
-.produto-venda:hover,
-.item-produto-venda:hover {
-    background: var(--cor-superficie-hover);
+.card-resumo,
+.resumo-card,
+.metrica {
+    min-width: 0;
+    padding: 21px;
+    background: var(--card);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-grande);
+    box-shadow: var(--sombra);
+    transition: var(--transicao);
 }
 
-.item-venda h4,
-.produto-venda h4 {
-    margin: 0 0 4px;
+.card-resumo:hover,
+.resumo-card:hover,
+.metrica:hover {
+    transform: translateY(-3px);
+    border-color: rgba(217, 143, 145, 0.4);
 }
 
-.item-venda p,
-.produto-venda p {
+.card-resumo p,
+.resumo-card p,
+.metrica p {
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.card-resumo h2,
+.card-resumo h3,
+.resumo-card h2,
+.resumo-card h3,
+.metrica h2,
+.metrica h3 {
     margin: 0;
-    font-size: 12px;
-}
-
-.quantidade-produto {
-    width: 90px;
-}
-
-.preco-produto,
-.subtotal-produto {
-    font-weight: 750;
-    white-space: nowrap;
-}
-
-/* =========================================================
-   TOTAL DA VENDA
-   ========================================================= */
-
-.total-venda,
-.resumo-total,
-.venda-total {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: var(--raio-medio);
-    background: #f4efff;
-    border: 1px solid #e4d8ff;
-}
-
-.total-venda span,
-.resumo-total span,
-.venda-total span {
-    color: var(--cor-texto-secundario);
-    font-weight: 600;
-}
-
-.total-venda strong,
-.resumo-total strong,
-.venda-total strong {
-    color: var(--cor-primaria);
-    font-size: 24px;
-    font-weight: 850;
+    font-size: 25px;
+    color: var(--rosa-claro);
     overflow-wrap: anywhere;
 }
 
-/* =========================================================
-   PARCELAMENTO
-   ========================================================= */
+.valor-dourado {
+    color: var(--dourado-claro) !important;
+}
 
-#installment-options,
-.installment-options,
-.opcoes-parcelamento,
-.parcelamento-container {
-    padding: 20px;
-    margin-top: 16px;
-    border: 1px solid #e4d8ff;
+.valor-sucesso {
+    color: var(--sucesso) !important;
+}
+
+.valor-alerta {
+    color: var(--alerta) !important;
+}
+
+/* ================= PRODUTOS / ESTOQUE ================= */
+
+.produtos-grid,
+.grid-produtos,
+.lista-produtos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.produto-card,
+.card-produto {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--borda);
     border-radius: var(--raio-grande);
-    background: linear-gradient(135deg, #faf7ff, #fff7fb);
-    animation: aparecer 0.25s ease;
+    box-shadow: var(--sombra);
+    transition: var(--transicao);
 }
 
-#installment-options[hidden],
-.installment-options[hidden],
-.opcoes-parcelamento[hidden],
-.parcelamento-container[hidden] {
-    display: none !important;
+.produto-card:hover,
+.card-produto:hover {
+    transform: translateY(-3px);
+    border-color: rgba(217, 143, 145, 0.4);
 }
 
-#installment-options h3,
-.installment-options h3,
-.opcoes-parcelamento h3,
-.parcelamento-container h3 {
+.produto-imagem,
+.card-produto img {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    background: var(--fundo-secundario);
+}
+
+.produto-conteudo {
+    padding: 17px;
+}
+
+.produto-nome {
+    font-size: 17px;
+    font-weight: 750;
+    margin-bottom: 8px;
+}
+
+.produto-preco {
+    color: var(--dourado-claro);
+    font-size: 21px;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+.produto-estoque {
+    color: var(--texto-secundario);
+    font-size: 12px;
     margin-bottom: 15px;
 }
 
-#installment-value,
-.installment-value,
-.valor-parcela {
-    color: var(--cor-primaria);
-    font-weight: 800;
-    font-size: 20px;
+.produto-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
 }
 
-.resumo-parcelamento,
-.detalhes-parcelamento {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 16px;
+.produto-acoes .btn {
+    flex: 1;
 }
 
-.resumo-parcelamento > div,
-.detalhes-parcelamento > div {
-    padding: 14px;
-    border-radius: var(--raio-medio);
-    background: #fff;
-    border: 1px solid var(--cor-borda);
-}
-
-.resumo-parcelamento span,
-.detalhes-parcelamento span {
-    display: block;
-    color: var(--cor-texto-secundario);
-    font-size: 12px;
-    margin-bottom: 5px;
-}
-
-.resumo-parcelamento strong,
-.detalhes-parcelamento strong {
-    display: block;
-    font-size: 17px;
-    overflow-wrap: anywhere;
-}
-
-.aviso-parcelamento {
-    padding: 12px 14px;
-    margin-top: 14px;
-    border-radius: var(--raio-medio);
-    background: var(--cor-info-fundo);
-    color: #1e40af;
-    font-size: 12px;
-}
-
-/* =========================================================
-   TABELA DE VENDAS E PARCELAS
-   ========================================================= */
+/* ================= TABELAS ================= */
 
 .tabela-container,
 .table-container,
 .tabela-responsiva {
     width: 100%;
     overflow-x: auto;
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-medio);
-    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    background: var(--card);
 }
 
 thead {
-    background: #f7f5fb;
+    background: var(--fundo-secundario);
 }
 
 th,
 td {
     padding: 14px 16px;
-    border-bottom: 1px solid var(--cor-borda);
+    border-bottom: 1px solid var(--borda);
     vertical-align: middle;
 }
 
 th {
-    color: var(--cor-texto-secundario);
+    color: var(--dourado-claro);
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -635,6 +611,7 @@ th {
 }
 
 td {
+    color: var(--texto);
     font-size: 13px;
 }
 
@@ -643,74 +620,61 @@ tbody tr:last-child td {
 }
 
 tbody tr:hover {
-    background: #fcfaff;
+    background: rgba(255, 255, 255, 0.035);
 }
 
 td .acoes {
     flex-wrap: nowrap;
 }
 
-/* =========================================================
-   CARDS DE VENDAS
-   ========================================================= */
+/* ================= VENDAS ================= */
 
-.lista-vendas,
 .vendas-lista,
+.lista-vendas,
 #lista-vendas {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    gap: 17px;
 }
 
 .venda-card,
 .card-venda {
     min-width: 0;
     padding: 20px;
-    background: #fff;
-    border: 1px solid var(--cor-borda);
+    background: var(--card);
+    border: 1px solid var(--borda);
     border-radius: var(--raio-grande);
-    box-shadow: var(--sombra-card);
-    transition: transform var(--transicao),
-                box-shadow var(--transicao);
-}
-
-.venda-card:hover,
-.card-venda:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(43, 28, 77, 0.08);
-}
-
-.venda-card-cabecalho,
-.card-venda-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
+    box-shadow: var(--sombra);
 }
 
 .venda-card h3,
 .card-venda h3 {
-    margin: 0 0 5px;
+    margin-bottom: 8px;
 }
 
 .venda-card p,
 .card-venda p {
-    margin: 4px 0;
+    margin: 5px 0;
     overflow-wrap: anywhere;
 }
 
-.venda-card-valor,
-.card-venda-valor {
-    margin: 16px 0;
+.venda-valor,
+.venda-card-valor {
+    color: var(--dourado-claro);
     font-size: 24px;
     font-weight: 850;
-    color: var(--cor-primaria);
+    margin: 15px 0;
 }
 
-/* =========================================================
-   STATUS DE PAGAMENTO
-   ========================================================= */
+.venda-cabecalho,
+.venda-card-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* ================= STATUS ================= */
 
 .badge,
 .status,
@@ -727,34 +691,100 @@ td .acoes {
 }
 
 .status-pago,
-.badge-pago,
-.status-pagamento.pago {
-    color: #166534;
-    background: var(--cor-sucesso-fundo);
+.badge-pago {
+    color: #BDE8C8;
+    background: rgba(74, 151, 96, 0.2);
+    border: 1px solid rgba(143, 199, 161, 0.3);
 }
 
 .status-pendente,
-.badge-pendente,
-.status-pagamento.pendente {
-    color: #92400e;
-    background: var(--cor-alerta-fundo);
+.badge-pendente {
+    color: #F0D69E;
+    background: rgba(198, 161, 91, 0.16);
+    border: 1px solid rgba(198, 161, 91, 0.3);
 }
 
 .status-atrasado,
 .badge-atrasado {
-    color: #991b1b;
-    background: var(--cor-erro-fundo);
+    color: #FFC3C6;
+    background: rgba(172, 80, 88, 0.2);
+    border: 1px solid rgba(229, 140, 145, 0.3);
 }
 
 .status-parcelado,
 .badge-parcelado {
-    color: #6b21a8;
-    background: #f3e8ff;
+    color: var(--rosa-claro);
+    background: rgba(217, 143, 145, 0.15);
+    border: 1px solid var(--borda);
 }
 
-/* =========================================================
-   PARCELAS INDIVIDUAIS
-   ========================================================= */
+/* ================= PARCELAMENTO ================= */
+
+#installment-options,
+.installment-options,
+.opcoes-parcelamento,
+.parcelamento-container {
+    margin-top: 17px;
+    padding: 20px;
+    background: rgba(217, 143, 145, 0.07);
+    border: 1px solid rgba(217, 143, 145, 0.25);
+    border-radius: var(--raio-grande);
+}
+
+#installment-options[hidden],
+.installment-options[hidden],
+.opcoes-parcelamento[hidden],
+.parcelamento-container[hidden] {
+    display: none !important;
+}
+
+#installment-options h3,
+.installment-options h3,
+.opcoes-parcelamento h3 {
+    color: var(--rosa-claro);
+    margin-bottom: 14px;
+}
+
+#installment-value,
+.installment-value,
+.valor-parcela {
+    color: var(--dourado-claro);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.resumo-parcelamento,
+.detalhes-parcelamento {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.resumo-parcelamento > div,
+.detalhes-parcelamento > div {
+    padding: 14px;
+    border-radius: var(--raio);
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--borda);
+}
+
+.resumo-parcelamento span,
+.detalhes-parcelamento span {
+    display: block;
+    font-size: 12px;
+    color: var(--texto-secundario);
+    margin-bottom: 5px;
+}
+
+.resumo-parcelamento strong,
+.detalhes-parcelamento strong {
+    color: var(--texto);
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+
+/* ================= LISTA DE PARCELAS ================= */
 
 .lista-parcelas,
 .parcelas-lista,
@@ -769,42 +799,39 @@ td .acoes {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
     padding: 16px;
-    background: #fff;
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-medio);
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
 }
 
 .parcela-card h4,
 .item-parcela h4 {
-    margin: 0 0 5px;
-    font-size: 14px;
+    margin-bottom: 5px;
 }
 
 .parcela-card p,
 .item-parcela p {
-    margin: 3px 0;
     font-size: 12px;
+    margin: 4px 0;
 }
 
 .parcela-valor {
     font-size: 17px;
     font-weight: 800;
-    color: var(--cor-texto);
+    color: var(--dourado-claro);
 }
 
 .parcela-paga {
-    border-left: 4px solid var(--cor-sucesso);
+    border-left: 4px solid var(--sucesso);
 }
 
 .parcela-pendente {
-    border-left: 4px solid var(--cor-alerta);
+    border-left: 4px solid var(--alerta);
 }
 
-/* =========================================================
-   MODAIS
-   ========================================================= */
+/* ================= MODAIS ================= */
 
 .modal,
 .modal-overlay,
@@ -816,8 +843,8 @@ td .acoes {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(25, 20, 39, 0.55);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 8, 10, 0.78);
+    backdrop-filter: blur(5px);
 }
 
 .modal[hidden],
@@ -829,19 +856,19 @@ td .acoes {
 .modal-conteudo,
 .modal-content,
 .modal-dialog {
-    width: min(600px, 100%);
-    max-height: min(85vh, 900px);
+    width: 100%;
+    max-width: 620px;
+    max-height: 88vh;
     overflow-y: auto;
     padding: 26px;
-    background: #fff;
+    background: var(--card);
+    border: 1px solid var(--borda);
     border-radius: 20px;
-    box-shadow: var(--sombra-modal);
-    animation: modalEntrar 0.2s ease;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
 }
 
-.modal-largo,
-.modal-content.largo {
-    width: min(850px, 100%);
+.modal-largo {
+    max-width: 900px;
 }
 
 .modal-cabecalho,
@@ -849,10 +876,10 @@ td .acoes {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 18px;
+    gap: 15px;
+    padding-bottom: 17px;
     margin-bottom: 20px;
-    border-bottom: 1px solid var(--cor-borda);
+    border-bottom: 1px solid var(--borda);
 }
 
 .modal-cabecalho h2,
@@ -862,22 +889,21 @@ td .acoes {
 
 .modal-fechar,
 .btn-fechar-modal {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    border: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--borda);
     border-radius: 50%;
-    background: #f1eef8;
-    color: var(--cor-texto);
+    background: transparent;
+    color: var(--texto);
     font-size: 22px;
 }
 
 .modal-fechar:hover,
 .btn-fechar-modal:hover {
-    background: #e7e0f3;
+    background: rgba(217, 143, 145, 0.15);
 }
 
 .modal-rodape,
@@ -886,23 +912,52 @@ td .acoes {
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 10px;
-    padding-top: 20px;
     margin-top: 20px;
-    border-top: 1px solid var(--cor-borda);
+    padding-top: 18px;
+    border-top: 1px solid var(--borda);
 }
 
-/* =========================================================
-   FILTROS E PESQUISA
-   ========================================================= */
+/* ================= EXCLUSÃO / CONFIRMAÇÃO ================= */
+
+.confirmacao-exclusao {
+    padding: 20px;
+    border: 1px solid rgba(229, 140, 145, 0.3);
+    border-radius: var(--raio-grande);
+    background: rgba(143, 66, 73, 0.12);
+}
+
+.confirmacao-exclusao h3 {
+    color: #FFC3C6;
+}
+
+.confirmacao-exclusao p {
+    margin: 10px 0;
+}
+
+.aviso-exclusao {
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: var(--raio);
+    color: #FFC3C6;
+    background: rgba(143, 66, 73, 0.17);
+    font-size: 12px;
+}
+
+.btn-excluir:focus-visible {
+    outline: 3px solid rgba(229, 140, 145, 0.5);
+    outline-offset: 3px;
+}
+
+/* ================= FILTROS / PESQUISA ================= */
 
 .filtros,
 .filtros-vendas,
 .barra-filtros {
     display: flex;
     align-items: center;
-    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 22px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .filtros input,
@@ -912,88 +967,56 @@ td .acoes {
 .barra-filtros input,
 .barra-filtros select {
     flex: 1;
-    min-width: 160px;
+    min-width: 150px;
     width: auto;
 }
 
-/* =========================================================
-   ESTADOS VAZIOS
-   ========================================================= */
-
-.estado-vazio,
-.empty-state,
-.sem-registros {
-    padding: 45px 20px;
-    text-align: center;
-    border: 1px dashed #d9d1e8;
-    border-radius: var(--raio-grande);
-    background: #fcfbff;
-}
-
-.estado-vazio h3,
-.empty-state h3,
-.sem-registros h3 {
-    margin-bottom: 8px;
-}
-
-.estado-vazio p,
-.empty-state p,
-.sem-registros p {
-    max-width: 420px;
-    margin: 0 auto;
-    color: var(--cor-texto-secundario);
-}
-
-/* =========================================================
-   ALERTAS E MENSAGENS
-   ========================================================= */
+/* ================= ALERTAS ================= */
 
 .alerta,
 .alert,
 .mensagem {
     padding: 13px 16px;
     margin: 12px 0;
-    border-radius: var(--raio-medio);
+    border-radius: var(--raio);
     font-size: 13px;
 }
 
 .alerta-sucesso,
 .alert-success {
-    color: #166534;
-    background: var(--cor-sucesso-fundo);
-    border: 1px solid #bbf7d0;
+    color: #BDE8C8;
+    background: rgba(74, 151, 96, 0.15);
+    border: 1px solid rgba(143, 199, 161, 0.3);
 }
 
 .alerta-erro,
 .alert-danger {
-    color: #991b1b;
-    background: var(--cor-erro-fundo);
-    border: 1px solid #fecaca;
+    color: #FFC3C6;
+    background: rgba(172, 80, 88, 0.15);
+    border: 1px solid rgba(229, 140, 145, 0.3);
 }
 
 .alerta-aviso,
 .alert-warning {
-    color: #92400e;
-    background: var(--cor-alerta-fundo);
-    border: 1px solid #fde68a;
+    color: #F0D69E;
+    background: rgba(198, 161, 91, 0.12);
+    border: 1px solid rgba(198, 161, 91, 0.3);
 }
 
 .alerta-info,
 .alert-info {
-    color: #1e40af;
-    background: var(--cor-info-fundo);
-    border: 1px solid #bfdbfe;
+    color: #C7DDF5;
+    background: rgba(100, 145, 190, 0.13);
+    border: 1px solid rgba(168, 199, 232, 0.3);
 }
 
-/* =========================================================
-   RELATÓRIOS
-   ========================================================= */
+/* ================= RELATÓRIOS ================= */
 
 .relatorio-acoes,
 .acoes-relatorio {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
@@ -1006,49 +1029,86 @@ td .acoes {
 
 .relatorio-resumo > div {
     padding: 16px;
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio-medio);
-    background: #fff;
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
 }
 
 .relatorio-resumo span {
     display: block;
-    color: var(--cor-texto-secundario);
     font-size: 12px;
+    color: var(--texto-secundario);
 }
 
 .relatorio-resumo strong {
     display: block;
     margin-top: 6px;
+    color: var(--dourado-claro);
     font-size: 20px;
 }
 
-/* =========================================================
-   UTILITÁRIOS
-   ========================================================= */
+/* ================= ESTADOS VAZIOS ================= */
+
+.estado-vazio,
+.empty-state,
+.sem-registros {
+    padding: 40px 20px;
+    text-align: center;
+    border: 1px dashed rgba(217, 143, 145, 0.35);
+    border-radius: var(--raio-grande);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.estado-vazio h3,
+.empty-state h3,
+.sem-registros h3 {
+    color: var(--rosa-claro);
+    margin-bottom: 8px;
+}
+
+.estado-vazio p,
+.empty-state p,
+.sem-registros p {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* ================= UTILITÁRIOS ================= */
 
 .texto-secundario {
-    color: var(--cor-texto-secundario);
+    color: var(--texto-secundario);
+}
+
+.texto-rosa {
+    color: var(--rosa-claro);
+}
+
+.texto-dourado {
+    color: var(--dourado-claro);
 }
 
 .texto-sucesso {
-    color: var(--cor-sucesso);
+    color: var(--sucesso);
 }
 
 .texto-alerta {
-    color: var(--cor-alerta);
+    color: var(--alerta);
 }
 
 .texto-erro {
-    color: var(--cor-erro);
+    color: var(--erro);
+}
+
+.texto-centro {
+    text-align: center;
 }
 
 .texto-direita {
     text-align: right;
 }
 
-.texto-centro {
-    text-align: center;
+.w-100 {
+    width: 100%;
 }
 
 .mt-1 { margin-top: 8px; }
@@ -1059,55 +1119,40 @@ td .acoes {
 .mb-2 { margin-bottom: 16px; }
 .mb-3 { margin-bottom: 24px; }
 
-.w-100 {
-    width: 100%;
-}
-
 .oculto,
 .hidden {
     display: none !important;
 }
 
-/* =========================================================
-   ANIMAÇÕES
-   ========================================================= */
+/* ================= ANIMAÇÕES ================= */
 
 @keyframes aparecer {
     from {
         opacity: 0;
-        transform: translateY(5px);
+        transform: translateY(6px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.delete-sale-button {
-    display: block;
-    width: 100%;
-    margin-top: 20px;
-    padding: 12px 18px;
-    border: 1px solid #ef4444;
-    border-radius: 10px;
-    background: #b91c1c;
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
+@keyframes modalEntrar {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.delete-sale-button:hover {
-    background: #991b1b;
-}
+/* ================= RESPONSIVIDADE ================= */
 
-.delete-sale-button:focus-visible {
-    outline: 2px solid #ef4444;
-    outline-offset: 3px;
-}
-
-.delete-sale-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+@media (max-width: 950px) {
+    .resumo-cards,
+    .cards-resumo,
+    .
