@@ -1076,4 +1076,38 @@ td .acoes {
     from {
         opacity: 0;
         transform: translateY(5px);
- 
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.delete-sale-button {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px 18px;
+    border: 1px solid #ef4444;
+    border-radius: 10px;
+    background: #b91c1c;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.delete-sale-button:hover {
+    background: #991b1b;
+}
+
+.delete-sale-button:focus-visible {
+    outline: 2px solid #ef4444;
+    outline-offset: 3px;
+}
+
+.delete-sale-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
