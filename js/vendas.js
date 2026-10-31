@@ -79,18 +79,18 @@ if (el) {
 }
 
 function escaparHTML(valor) {
-return String(valor ?? "").replace(/[&<>"']/g, caractere => {
-const mapa = {
-"&": "&",
-"<": "<",
-">": ">",
-'"': """,
-"'": "'"
-};
+function escaparHTML(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => {
+        const mapa = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        };
 
-return mapa[caractere];  
-});
-
+        return mapa[caractere];
+    });
 }
 
 function numero(valor) {
@@ -410,13 +410,12 @@ return centavos / 100;
 }
 
 function atualizarTotal() {
-if (saleTotal) {
-saleTotal.textContent =
-R$ ${formatarMoeda(calcularTotal())};
-}
+    if (saleTotal) {
+        saleTotal.textContent =
+            `R$ ${formatarMoeda(calcularTotal())}`;
+    }
 
-atualizarValorParcela();
-
+    atualizarValorParcela();
 }
 
 // =====================================================
@@ -812,15 +811,17 @@ if (!produto) return total;
 // =====================================================
 
 async function carregarVendas() {
-if (salesList) {
-salesList.innerHTML =   <div class="empty-sales">Carregando vendas...</div>  ;
-}
+    if (salesList) {
+        salesList.innerHTML = `
+            <div class="empty-sales">Carregando vendas...</div>
+        `;
+    }
 
-const { data: vendasData, error: vendasError } =  
-    await supabaseClient  
-        .from("vendas")  
-        .select("*")  
-        .order("criado_em", { ascending: false });  
+    const { data: vendasData, error: vendasError } =
+        await supabaseClient
+            .from("vendas")
+            .select("*")
+            .order("criado_em", { ascending: false });
 
 if (vendasError) {  
     console.error("Erro ao carregar vendas:", vendasError);  
