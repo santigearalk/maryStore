@@ -31,54 +31,58 @@ const reportModal = document.getElementById("report-modal");
 const reportStartDate = document.getElementById("report-start-date");
 const reportEndDate = document.getElementById("report-end-date");
 const reportStatus = document.getElementById("report-status");
-const reportCount = document.getElementById("report-count");
-const reportTotal = document.getElementById("report-total");
-const reportPending = document.getElementById("report-pending");
 const reportMessage = document.getElementById("report-message");
 
 // =====================================================
 // INICIALIZAÇÃO
 // =====================================================
 
-document.addEventListener("DOMContentLoaded", async () => {
-configurarEventos();
+document.addEventListener("DOMContentLoaded", inicializarSistema);
 
-const autenticado = await verificarUsuario();  
+async function inicializarSistema() {
+    configurarEventos();
 
-if (!autenticado) return;  
+    if (typeof supabaseClient === "undefined" || !supabaseClient) {
+        console.error("supabaseClient não foi inicializado.");
+        alert(
+            "Não foi possível conectar ao Supabase. Confira o arquivo supabase.js."
+        );
+        return;
+    }
 
-try {  
-    await carregarProdutos();  
-    await carregarVendas();  
-    await atualizarResumo();  
-    atualizarPreviewRelatorio();  
-} catch (error) {  
-    mostrarErro(  
-        "Não foi possível carregar os dados. Atualize a página para tentar novamente.",  
-        error  
-    );  
+    const autenticado = await verificarUsuario();
+
+    if (!autenticado) return;
+
+    try {
+        await carregarProdutos();
+        await carregarVendas();
+        await atualizarResumo();
+        atualizarPreviewRelatorio();
+    } catch (error) {
+        mostrarErro(
+            "Não foi possível carregar os dados. Atualize a página para tentar novamente.",
+            error
+        );
+    }
 }
-
-});
 
 // =====================================================
 // UTILITÁRIOS
 // =====================================================
 
 function elemento(id) {
-return document.getElementById(id);
+    return document.getElementById(id);
 }
 
 function texto(id, valor) {
-const el = elemento(id);
+    const el = elemento(id);
 
-if (el) {  
-    el.textContent = valor;  
+    if (el) {
+        el.textContent = valor;
+    }
 }
 
-}
-
-function escaparHTML(valor) {
 function escaparHTML(valor) {
     return String(valor ?? "").replace(/[&<>"']/g, caractere => {
         const mapa = {
@@ -94,71 +98,67 @@ function escaparHTML(valor) {
 }
 
 function numero(valor) {
-const resultado = Number(valor);
+    const resultado = Number(valor);
 
-return Number.isFinite(resultado) ? resultado : 0;
-
+    return Number.isFinite(resultado) ? resultado : 0;
 }
 
 function formatarMoeda(valor) {
-return numero(valor).toLocaleString("pt-BR", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-});
+    return numero(valor).toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
 function formatarData(valor, incluirHora = false) {
-if (!valor) return "Não informada";
+    if (!valor) return "Não informada";
 
-const data = new Date(valor);  
+    const data = new Date(valor);
 
-if (Number.isNaN(data.getTime())) {  
-    return "Data inválida";  
-}  
+    if (Number.isNaN(data.getTime())) {
+        return "Data inválida";
+    }
 
-return incluirHora  
-    ? data.toLocaleString("pt-BR")  
-    : data.toLocaleDateString("pt-BR");
-
+    return incluirHora
+        ? data.toLocaleString("pt-BR")
+        : data.toLocaleDateString("pt-BR");
 }
 
 function dataLocalISO(data = new Date()) {
-const ano = data.getFullYear();
-const mes = String(data.getMonth() + 1).padStart(2, "0");
-const dia = String(data.getDate()).padStart(2, "0");
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
 
-return `${ano}-${mes}-${dia}`;
-
+    return `${ano}-${mes}-${dia}`;
 }
 
 function obterNomeProduto(produto) {
-return produto?.nome || produto?.name || "Produto";
+    return produto?.nome || produto?.name || "Produto";
 }
 
 function mostrarErro(mensagem, erro) {
-console.error(mensagem, erro || "");
+    console.error(mensagem, erro || "");
 
-alert(  
-    erro?.message  
-        ? `${mensagem}\n\nDetalhes: ${erro.message}`  
-        : mensagem  
-);
-
+    alert(
+        erro?.message
+            ? `${mensagem}\n\nDetalhes: ${erro.message}`
+            : mensagem
+    );
 }
 
 function rpcAusente(error) {
-return ["PGRST202", "42883"].includes(error?.code);
+    return ["PGRST202", "42883"].includes(error?.code);
 }
 
 function vendaEstaPaga(venda) {
-return venda?.status_pagamento === "pago";
+    return venda?.status_pagamento === "pago";
 }
 
 function vendaEstaPendente(venda) {
-return (
-venda?.status_pagamento === "pendente" &&
-venda?.forma_pagamento === "fiado"
-);
+    return (
+        venda?.status_pagamento === "pendente" &&
+        ["fiado", "parcelado"].includes(venda?.forma_pagamento)
+    );
 }
 
 // =====================================================
@@ -166,27 +166,26 @@ venda?.forma_pagamento === "fiado"
 // =====================================================
 
 async function verificarUsuario() {
-try {
-const {
-data: { user },
-error
-} = await supabaseClient.auth.getUser();
+    try {
+        const {
+            data: { user },
+            error
+        } = await supabaseClient.auth.getUser();
 
-if (error) throw error;  
+        if (error) throw error;
 
-    if (!user) {  
-        window.location.href = "index.html";  
-        return false;  
-    }  
+        if (!user) {
+            window.location.href = "index.html";
+            return false;
+        }
 
-    return true;  
-} catch (error) {  
-    console.error("Erro ao verificar usuário:", error);  
+        return true;
+    } catch (error) {
+        console.error("Erro ao verificar usuário:", error);
 
-    window.location.href = "index.html";  
-    return false;  
-}
-
+        window.location.href = "index.html";
+        return false;
+    }
 }
 
 // =====================================================
@@ -194,16 +193,15 @@ if (error) throw error;
 // =====================================================
 
 async function sair() {
-try {
-const { error } = await supabaseClient.auth.signOut();
+    try {
+        const { error } = await supabaseClient.auth.signOut();
 
-if (error) throw error;  
+        if (error) throw error;
 
-    window.location.href = "index.html";  
-} catch (error) {  
-    mostrarErro("Não foi possível sair da conta.", error);  
-}
-
+        window.location.href = "index.html";
+    } catch (error) {
+        mostrarErro("Não foi possível sair da conta.", error);
+    }
 }
 
 // =====================================================
@@ -211,42 +209,41 @@ if (error) throw error;
 // =====================================================
 
 async function carregarProdutos() {
-if (!saleProduct) return;
+    if (!saleProduct) return;
 
-const { data, error } = await supabaseClient  
-    .from("produtos")  
-    .select("id, nome, preco, quantidade")  
-    .order("nome", { ascending: true });  
+    const { data, error } = await supabaseClient
+        .from("produtos")
+        .select("id, nome, preco, quantidade")
+        .order("nome", { ascending: true });
 
-if (error) {  
-    console.error("Erro ao carregar produtos:", error);  
+    if (error) {
+        console.error("Erro ao carregar produtos:", error);
 
-    saleProduct.innerHTML = `  
-        <option value="">Erro ao carregar produtos</option>  
-    `;  
+        saleProduct.innerHTML = `
+            <option value="">Erro ao carregar produtos</option>
+        `;
 
-    return;  
-}  
+        throw error;
+    }
 
-produtos = data || [];  
+    produtos = data || [];
 
-saleProduct.innerHTML = `  
-    <option value="">Selecione um produto</option>  
-`;  
+    saleProduct.innerHTML = `
+        <option value="">Selecione um produto</option>
+    `;
 
-produtos  
-    .filter(produto => numero(produto.quantidade) > 0)  
-    .forEach(produto => {  
-        const option = document.createElement("option");  
+    produtos
+        .filter(produto => numero(produto.quantidade) > 0)
+        .forEach(produto => {
+            const option = document.createElement("option");
 
-        option.value = produto.id;  
+            option.value = produto.id;
 
-        option.textContent =  
-            `${obterNomeProduto(produto)} — R$ ${formatarMoeda(produto.preco)} (${produto.quantidade} disponíveis)`;  
+            option.textContent =
+                `${obterNomeProduto(produto)} — R$ ${formatarMoeda(produto.preco)} (${produto.quantidade} disponíveis)`;
 
-        saleProduct.appendChild(option);  
-    });
-
+            saleProduct.appendChild(option);
+        });
 }
 
 // =====================================================
@@ -254,67 +251,63 @@ produtos
 // =====================================================
 
 function adicionarProdutoVenda() {
-if (salvandoVenda) return;
+    if (salvandoVenda) return;
 
-const produtoId = saleProduct?.value;  
-const quantidade = Number(saleQuantity?.value);  
+    const produtoId = saleProduct?.value;
+    const quantidade = Number(saleQuantity?.value);
 
-if (!produtoId) {  
-    alert("Selecione um produto.");  
-    return;  
-}  
+    if (!produtoId) {
+        alert("Selecione um produto.");
+        return;
+    }
 
-if (!Number.isInteger(quantidade) || quantidade <= 0) {  
-    alert("Informe uma quantidade inteira válida.");  
-    return;  
-}  
+    if (!Number.isInteger(quantidade) || quantidade <= 0) {
+        alert("Informe uma quantidade inteira válida.");
+        return;
+    }
 
-const produto = produtos.find(  
-    item => String(item.id) === String(produtoId)  
-);  
+    const produto = produtos.find(
+        item => String(item.id) === String(produtoId)
+    );
 
-if (!produto) {  
-    alert("Produto não encontrado.");  
-    return;  
-}  
+    if (!produto) {
+        alert("Produto não encontrado.");
+        return;
+    }
 
-const estoque = numero(produto.quantidade);  
+    const estoque = numero(produto.quantidade);
 
-const itemExistente = itensVenda.find(  
-    item => String(item.produto_id) === String(produto.id)  
-);  
+    const itemExistente = itensVenda.find(
+        item => String(item.produto_id) === String(produto.id)
+    );
 
-const quantidadeAtual = itemExistente  
-    ? itemExistente.quantidade  
-    : 0;  
+    const quantidadeAtual = itemExistente
+        ? itemExistente.quantidade
+        : 0;
 
-if (quantidadeAtual + quantidade > estoque) {  
-    alert(  
-        `Estoque insuficiente. Disponível: ${estoque} unidade(s).`  
-    );  
+    if (quantidadeAtual + quantidade > estoque) {
+        alert(`Estoque insuficiente. Disponível: ${estoque} unidade(s).`);
+        return;
+    }
 
-    return;  
-}  
+    if (itemExistente) {
+        itemExistente.quantidade += quantidade;
+    } else {
+        itensVenda.push({
+            produto_id: produto.id,
+            nome: obterNomeProduto(produto),
+            quantidade,
+            preco: numero(produto.preco)
+        });
+    }
 
-if (itemExistente) {  
-    itemExistente.quantidade += quantidade;  
-} else {  
-    itensVenda.push({  
-        produto_id: produto.id,  
-        nome: obterNomeProduto(produto),  
-        quantidade,  
-        preco: numero(produto.preco)  
-    });  
-}  
+    renderizarItens();
 
-renderizarItens();  
+    saleProduct.value = "";
 
-saleProduct.value = "";  
-
-if (saleQuantity) {  
-    saleQuantity.value = 1;  
-}
-
+    if (saleQuantity) {
+        saleQuantity.value = 1;
+    }
 }
 
 // =====================================================
@@ -322,55 +315,52 @@ if (saleQuantity) {
 // =====================================================
 
 function renderizarItens() {
-if (!saleItems) return;
+    if (!saleItems) return;
 
-if (itensVenda.length === 0) {  
-    saleItems.innerHTML = `  
-        <p class="empty-sale">Nenhum produto adicionado.</p>  
-    `;  
+    if (itensVenda.length === 0) {
+        saleItems.innerHTML = `
+            <p class="empty-sale">Nenhum produto adicionado.</p>
+        `;
 
-    atualizarTotal();  
+        atualizarTotal();
+        return;
+    }
 
-    return;  
-}  
+    saleItems.innerHTML = "";
 
-saleItems.innerHTML = "";  
+    itensVenda.forEach((item, index) => {
+        const subtotal = item.preco * item.quantidade;
+        const div = document.createElement("div");
 
-itensVenda.forEach((item, index) => {  
-    const subtotal = item.preco * item.quantidade;  
+        div.className = "sale-item";
 
-    const div = document.createElement("div");  
+        div.innerHTML = `
+            <div>
+                <strong>${escaparHTML(item.nome)}</strong>
 
-    div.className = "sale-item";  
+                <span>
+                    ${item.quantidade} × R$ ${formatarMoeda(item.preco)}
+                </span>
+            </div>
 
-    div.innerHTML = `  
-        <div>  
-            <strong>${escaparHTML(item.nome)}</strong>  
+            <div class="sale-item-right">
+                <strong>R$ ${formatarMoeda(subtotal)}</strong>
 
-            <span>  
-                ${item.quantidade} × R$ ${formatarMoeda(item.preco)}  
-            </span>  
-        </div>  
+                <button
+                    type="button"
+                    class="remove-item"
+                    data-remover-item="${index}"
+                    aria-label="Remover ${escaparHTML(item.nome)}"
+                >
+                    ×
+                </button>
+            </div>
+        `;
 
-        <div class="sale-item-right">  
-            <strong>R$ ${formatarMoeda(subtotal)}</strong>  
+        saleItems.appendChild(div);
+    });
 
-            <button  
-                type="button"  
-                class="remove-item"  
-                data-remover-item="${index}"  
-                aria-label="Remover ${escaparHTML(item.nome)}"  
-            >  
-                ×  
-            </button>  
-        </div>  
-    `;  
-
-    saleItems.appendChild(div);  
-});  
-
-atualizarTotal();
-
+    atualizarTotal();
 }
 
 // =====================================================
@@ -378,20 +368,19 @@ atualizarTotal();
 // =====================================================
 
 function removerItem(index) {
-if (salvandoVenda) return;
+    if (salvandoVenda) return;
 
-if (  
-    !Number.isInteger(index) ||  
-    index < 0 ||  
-    index >= itensVenda.length  
-) {  
-    return;  
-}  
+    if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= itensVenda.length
+    ) {
+        return;
+    }
 
-itensVenda.splice(index, 1);  
+    itensVenda.splice(index, 1);
 
-renderizarItens();
-
+    renderizarItens();
 }
 
 // =====================================================
@@ -399,20 +388,18 @@ renderizarItens();
 // =====================================================
 
 function calcularTotal() {
-const centavos = itensVenda.reduce((total, item) => {
-const precoCentavos = Math.round(numero(item.preco) * 100);
+    const centavos = itensVenda.reduce((total, item) => {
+        const precoCentavos = Math.round(numero(item.preco) * 100);
 
-return total + precoCentavos * numero(item.quantidade);  
-}, 0);  
+        return total + precoCentavos * numero(item.quantidade);
+    }, 0);
 
-return centavos / 100;
-
+    return centavos / 100;
 }
 
 function atualizarTotal() {
     if (saleTotal) {
-        saleTotal.textContent =
-            `R$ ${formatarMoeda(calcularTotal())}`;
+        saleTotal.textContent = `R$ ${formatarMoeda(calcularTotal())}`;
     }
 
     atualizarValorParcela();
@@ -423,142 +410,115 @@ function atualizarTotal() {
 // =====================================================
 
 function configurarParcelamento() {
-const formaPagamento = elemento("payment-method");
-const opcoesParcelamento = elemento("installment-options");
-const campoParcelas = elemento("installment-count");
+    const formaPagamento = elemento("payment-method");
+    const opcoesParcelamento = elemento("installment-options");
+    const campoParcelas = elemento("installment-count");
 
-if (!formaPagamento || !opcoesParcelamento || !campoParcelas) {  
-    console.warn(  
-        "Campos de parcelamento não encontrados. Confira o HTML."  
-    );  
+    if (!formaPagamento || !opcoesParcelamento || !campoParcelas) {
+        console.warn(
+            "Campos de parcelamento não encontrados. Confira o HTML."
+        );
 
-    return;  
-}  
+        return;
+    }
 
-function atualizarVisibilidade() {  
-    const parcelado = formaPagamento.value === "parcelado";  
+    function atualizarVisibilidade() {
+        const parcelado = formaPagamento.value === "parcelado";
 
-    opcoesParcelamento.style.display =  
-        parcelado ? "block" : "none";  
+        opcoesParcelamento.style.display = parcelado ? "block" : "none";
 
-    atualizarValorParcela();  
-}  
+        atualizarValorParcela();
+    }
 
-formaPagamento.addEventListener(  
-    "change",  
-    atualizarVisibilidade  
-);  
+    formaPagamento.addEventListener("change", atualizarVisibilidade);
+    campoParcelas.addEventListener("change", atualizarValorParcela);
+    campoParcelas.addEventListener("input", atualizarValorParcela);
 
-campoParcelas.addEventListener(  
-    "change",  
-    atualizarValorParcela  
-);  
-
-campoParcelas.addEventListener(  
-    "input",  
-    atualizarValorParcela  
-);  
-
-atualizarVisibilidade();
-
+    atualizarVisibilidade();
 }
 
 function obterQuantidadeParcelas() {
-const campo = elemento("installment-count");
+    const campo = elemento("installment-count");
+    const quantidade = Number(campo?.value || 2);
 
-const quantidade = Number(campo?.value || 2);  
+    if (
+        !Number.isInteger(quantidade) ||
+        quantidade < 2 ||
+        quantidade > 12
+    ) {
+        return null;
+    }
 
-if (  
-    !Number.isInteger(quantidade) ||  
-    quantidade < 2 ||  
-    quantidade > 12  
-) {  
-    return null;  
-}  
-
-return quantidade;
-
+    return quantidade;
 }
 
 function calcularParcelas(total, quantidade) {
-const totalCentavos = Math.round(numero(total) * 100);
+    const totalCentavos = Math.round(numero(total) * 100);
 
-if (  
-    !Number.isInteger(quantidade) ||  
-    quantidade < 1 ||  
-    totalCentavos < 0  
-) {  
-    return [];  
-}  
+    if (
+        !Number.isInteger(quantidade) ||
+        quantidade < 1 ||
+        totalCentavos < 0
+    ) {
+        return [];
+    }
 
-const valorBase = Math.floor(  
-    totalCentavos / quantidade  
-);  
+    const valorBase = Math.floor(totalCentavos / quantidade);
+    const resto = totalCentavos % quantidade;
 
-const resto = totalCentavos % quantidade;  
+    return Array.from({ length: quantidade }, (_, index) => {
+        const centavos = valorBase + (index < resto ? 1 : 0);
 
-return Array.from({ length: quantidade }, (_, index) => {  
-    const centavos =  
-        valorBase + (index < resto ? 1 : 0);  
-
-    return centavos / 100;  
-});
-
+        return centavos / 100;
+    });
 }
 
 function obterResumoParcelas(total, quantidade) {
-const parcelas = calcularParcelas(total, quantidade);
+    const parcelas = calcularParcelas(total, quantidade);
 
-if (parcelas.length === 0) {  
-    return "Parcelamento indisponível.";  
-}  
+    if (parcelas.length === 0) {
+        return "Parcelamento indisponível.";
+    }
 
-const valoresUnicos = [...new Set(parcelas)];  
+    const valoresUnicos = [...new Set(parcelas)];
 
-if (valoresUnicos.length === 1) {  
-    return `${quantidade}x de R$ ${formatarMoeda(parcelas[0])}`;  
-}  
+    if (valoresUnicos.length === 1) {
+        return `${quantidade}x de R$ ${formatarMoeda(parcelas[0])}`;
+    }
 
-return (  
-    `${quantidade} parcelas, de R$ ` +  
-    `${formatarMoeda(Math.min(...parcelas))} a R$ ` +  
-    `${formatarMoeda(Math.max(...parcelas))}`  
-);
-
+    return (
+        `${quantidade} parcelas, de R$ ` +
+        `${formatarMoeda(Math.min(...parcelas))} a R$ ` +
+        `${formatarMoeda(Math.max(...parcelas))}`
+    );
 }
 
 function atualizarValorParcela() {
-const campoValor = elemento("installment-value");
-const formaPagamento = elemento("payment-method");
+    const campoValor = elemento("installment-value");
+    const formaPagamento = elemento("payment-method");
 
-if (!campoValor || !formaPagamento) return;  
+    if (!campoValor || !formaPagamento) return;
 
-if (formaPagamento.value !== "parcelado") {  
-    campoValor.textContent = "";  
-    return;  
-}  
+    if (formaPagamento.value !== "parcelado") {
+        campoValor.textContent = "";
+        return;
+    }
 
-const quantidade = obterQuantidadeParcelas();  
+    const quantidade = obterQuantidadeParcelas();
 
-if (!quantidade) {  
-    campoValor.textContent =  
-        "Selecione entre 2 e 12 parcelas.";  
+    if (!quantidade) {
+        campoValor.textContent = "Selecione entre 2 e 12 parcelas.";
+        return;
+    }
 
-    return;  
-}  
+    const total = calcularTotal();
 
-const total = calcularTotal();  
+    if (total <= 0) {
+        campoValor.textContent = "Adicione produtos para calcular as parcelas.";
+        return;
+    }
 
-if (total <= 0) {  
-    campoValor.textContent =  
-        "Adicione produtos para calcular as parcelas.";  
-
-    return;  
-}  
-
-campoValor.textContent =  
-    obterResumoParcelas(total, quantidade);
-
+    campoValor.textContent = obterResumoParcelas(total, quantidade);
 }
 
 // =====================================================
@@ -566,49 +526,47 @@ campoValor.textContent =
 // =====================================================
 
 async function obterCliente(nome, telefone) {
-const nomeNormalizado = nome.trim();
+    const nomeNormalizado = nome.trim();
 
-if (!nomeNormalizado) {  
-    throw new Error("Informe o nome do cliente.");  
-}  
+    if (!nomeNormalizado) {
+        throw new Error("Informe o nome do cliente.");
+    }
 
-const { data, error } = await supabaseClient  
-    .from("clientes")  
-    .select("*")  
-    .eq("nome", nomeNormalizado)  
-    .limit(1);  
+    const { data, error } = await supabaseClient
+        .from("clientes")
+        .select("*")
+        .eq("nome", nomeNormalizado)
+        .limit(1);
 
-if (error) throw error;  
+    if (error) throw error;
 
-if (data && data.length > 0) {  
-    const cliente = data[0];  
+    if (data && data.length > 0) {
+        const cliente = data[0];
 
-    if (telefone && cliente.telefone !== telefone) {  
-        const { error: erroAtualizacao } = await supabaseClient  
-            .from("clientes")  
-            .update({ telefone })  
-            .eq("id", cliente.id);  
+        if (telefone && cliente.telefone !== telefone) {
+            const { error: erroAtualizacao } = await supabaseClient
+                .from("clientes")
+                .update({ telefone })
+                .eq("id", cliente.id);
 
-        if (erroAtualizacao) throw erroAtualizacao;  
-    }  
+            if (erroAtualizacao) throw erroAtualizacao;
+        }
 
-    return cliente;  
-}  
+        return cliente;
+    }
 
-const { data: novoCliente, error: erroCriacao } =  
-    await supabaseClient  
-        .from("clientes")  
-        .insert({  
-            nome: nomeNormalizado,  
-            telefone: telefone || null  
-        })  
-        .select()  
-        .single();  
+    const { data: novoCliente, error: erroCriacao } = await supabaseClient
+        .from("clientes")
+        .insert({
+            nome: nomeNormalizado,
+            telefone: telefone || null
+        })
+        .select()
+        .single();
 
-if (erroCriacao) throw erroCriacao;  
+    if (erroCriacao) throw erroCriacao;
 
-return novoCliente;
-
+    return novoCliente;
 }
 
 // =====================================================
@@ -616,194 +574,167 @@ return novoCliente;
 // =====================================================
 
 async function registrarVenda(event) {
-event.preventDefault();
+    event.preventDefault();
 
-if (salvandoVenda) return;  
+    if (salvandoVenda) return;
 
-if (itensVenda.length === 0) {  
-    alert("Adicione pelo menos um produto.");  
-    return;  
-}  
+    if (itensVenda.length === 0) {
+        alert("Adicione pelo menos um produto.");
+        return;
+    }
 
-const nome =  
-    elemento("customer-name")?.value.trim() || "";  
+    const nome = elemento("customer-name")?.value.trim() || "";
+    const telefone = elemento("customer-phone")?.value.trim() || "";
+    const formaPagamento = elemento("payment-method")?.value || "";
+    const observacao = elemento("sale-observation")?.value.trim() || "";
 
-const telefone =  
-    elemento("customer-phone")?.value.trim() || "";  
+    if (!nome) {
+        alert("Informe o nome do cliente.");
+        return;
+    }
 
-const formaPagamento =  
-    elemento("payment-method")?.value || "";  
+    const formasPermitidas = [
+        "dinheiro",
+        "pix",
+        "cartao",
+        "fiado",
+        "parcelado"
+    ];
 
-const observacao =  
-    elemento("sale-observation")?.value.trim() || "";  
+    if (!formasPermitidas.includes(formaPagamento)) {
+        alert("Selecione uma forma de pagamento válida.");
+        return;
+    }
 
-if (!nome) {  
-    alert("Informe o nome do cliente.");  
-    return;  
-}  
+    let quantidadeParcelas = null;
 
-const formasPermitidas = [  
-    "dinheiro",  
-    "pix",  
-    "cartao",  
-    "fiado",  
-    "parcelado"  
-];  
+    if (formaPagamento === "parcelado") {
+        quantidadeParcelas = obterQuantidadeParcelas();
 
-if (!formasPermitidas.includes(formaPagamento)) {  
-    alert("Selecione uma forma de pagamento válida.");  
-    return;  
-}  
+        if (!quantidadeParcelas) {
+            alert("Selecione uma quantidade entre 2 e 12 parcelas.");
+            return;
+        }
 
-let quantidadeParcelas = null;  
+        if (calcularTotal() <= 0) {
+            alert("O valor da venda precisa ser maior que zero.");
+            return;
+        }
+    }
 
-if (formaPagamento === "parcelado") {  
-    quantidadeParcelas = obterQuantidadeParcelas();  
+    const itens = itensVenda.map(item => ({
+        produto_id: item.produto_id,
+        quantidade: item.quantidade
+    }));
 
-    if (!quantidadeParcelas) {  
-        alert(  
-            "Selecione uma quantidade entre 2 e 12 parcelas."  
-        );  
+    const totalAntesDoRegistro = calcularTotal();
+    const button = elemento("save-sale-button");
 
-        return;  
-    }  
+    const controles = Array.from(saleForm?.elements || []).map(el => ({
+        el,
+        disabled: el.disabled
+    }));
 
-    if (calcularTotal() <= 0) {  
-        alert("O valor da venda precisa ser maior que zero.");  
-        return;  
-    }  
-}  
+    let registrada = false;
 
-const itens = itensVenda.map(item => ({  
-    produto_id: item.produto_id,  
-    quantidade: item.quantidade  
-}));  
+    salvandoVenda = true;
 
-const button = elemento("save-sale-button");  
+    controles.forEach(({ el }) => {
+        el.disabled = true;
+    });
 
-const controles = Array.from(  
-    saleForm?.elements || []  
-).map(el => ({  
-    el,  
-    disabled: el.disabled  
-}));  
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Registrando...";
+    }
 
-let registrada = false;  
+    try {
+        const cliente = await obterCliente(nome, telefone);
 
-salvandoVenda = true;  
+        let resultado;
 
-controles.forEach(({ el }) => {  
-    el.disabled = true;  
-});  
+        if (formaPagamento === "parcelado") {
+            resultado = await supabaseClient.rpc(
+                "registrar_venda_parcelada",
+                {
+                    p_cliente_id: cliente.id,
+                    p_observacao: observacao || null,
+                    p_itens: itens,
+                    p_quantidade_parcelas: quantidadeParcelas
+                }
+            );
+        } else {
+            resultado = await supabaseClient.rpc(
+                "registrar_venda",
+                {
+                    p_cliente_id: cliente.id,
+                    p_forma_pagamento: formaPagamento,
+                    p_observacao: observacao || null,
+                    p_itens: itens
+                }
+            );
+        }
 
-if (button) {  
-    button.disabled = true;  
-    button.textContent = "Registrando...";  
-}  
+        if (resultado.error) {
+            if (
+                formaPagamento === "parcelado" &&
+                rpcAusente(resultado.error)
+            ) {
+                throw new Error(
+                    "O parcelamento ainda não está configurado no banco. " +
+                    "Configure a função registrar_venda_parcelada no Supabase."
+                );
+            }
 
-try {  
-    const cliente = await obterCliente(nome, telefone);  
+            throw resultado.error;
+        }
 
-    let resultado;  
+        registrada = true;
+        itensVenda = [];
 
-    if (formaPagamento === "parcelado") {  
-        resultado = await supabaseClient.rpc(  
-            "registrar_venda_parcelada",  
-            {  
-                p_cliente_id: cliente.id,  
-                p_observacao: observacao || null,  
-                p_itens: itens,  
-                p_quantidade_parcelas: quantidadeParcelas  
-            }  
-        );  
-    } else {  
-        resultado = await supabaseClient.rpc(  
-            "registrar_venda",  
-            {  
-                p_cliente_id: cliente.id,  
-                p_forma_pagamento: formaPagamento,  
-                p_observacao: observacao || null,  
-                p_itens: itens  
-            }  
-        );  
-    }  
+        if (formaPagamento === "fiado") {
+            alert("Fiado registrado com sucesso!");
+        } else if (formaPagamento === "parcelado") {
+            alert(
+                `Venda parcelada em ${quantidadeParcelas} vezes registrada com sucesso!\n\n` +
+                `Total: R$ ${formatarMoeda(totalAntesDoRegistro)}\n` +
+                `${obterResumoParcelas(totalAntesDoRegistro, quantidadeParcelas)}`
+            );
+        } else {
+            alert("Venda registrada com sucesso!");
+        }
 
-    if (resultado.error) {  
-        if (  
-            formaPagamento === "parcelado" &&  
-            rpcAusente(resultado.error)  
-        ) {  
-            throw new Error(  
-                "O parcelamento ainda não está configurado no banco. " +  
-                "Configure a função registrar_venda_parcelada no Supabase."  
-            );  
-        }  
+        fecharModalVenda(true);
 
-        throw resultado.error;  
-    }  
+        await carregarProdutos();
+        await carregarVendas();
+        await atualizarResumo();
 
-    registrada = true;  
-    itensVenda = [];  
+        atualizarPreviewRelatorio();
 
-    if (formaPagamento === "fiado") {  
-        alert("Fiado registrado com sucesso!");  
-    } else if (formaPagamento === "parcelado") {  
-        alert(  
-            `Venda parcelada em ${quantidadeParcelas} vezes registrada com sucesso!\n\n` +  
-            `Total: R$ ${formatarMoeda(calcularParcelasTotal(itens))}\n` +  
-            `${obterResumoParcelas(calcularParcelasTotal(itens), quantidadeParcelas)}`  
-        );  
-    } else {  
-        alert("Venda registrada com sucesso!");  
-    }  
+    } catch (error) {
+        console.error("Erro ao registrar venda:", error);
 
-    fecharModalVenda(true);  
+        alert(
+            registrada
+                ? "A venda foi registrada, mas a tela não atualizou. Recarregue a página; não registre novamente."
+                : (
+                    error.message ||
+                    "Não foi possível confirmar o registro. Recarregue e confira as vendas antes de tentar novamente."
+                )
+        );
+    } finally {
+        salvandoVenda = false;
 
-    await carregarProdutos();  
-    await carregarVendas();  
-    await atualizarResumo();  
+        controles.forEach(({ el, disabled }) => {
+            el.disabled = disabled;
+        });
 
-    atualizarPreviewRelatorio();  
-
-} catch (error) {  
-    console.error("Erro ao registrar venda:", error);  
-
-    alert(  
-        registrada  
-            ? "A venda foi registrada, mas a tela não atualizou. Recarregue a página; não registre novamente."  
-            : (  
-                error.message ||  
-                "Não foi possível confirmar o registro. Recarregue e confira as vendas antes de tentar novamente."  
-            )  
-    );  
-} finally {  
-    salvandoVenda = false;  
-
-    controles.forEach(({ el, disabled }) => {  
-        el.disabled = disabled;  
-    });  
-
-    if (button) {  
-        button.disabled = false;  
-        button.textContent = "Registrar venda";  
-    }  
-}
-
-}
-
-function calcularParcelasTotal(itens) {
-return itens.reduce((total, item) => {
-const produto = produtos.find(
-p => String(p.id) === String(item.produto_id)
-);
-
-if (!produto) return total;  
-
-    return total +  
-        Math.round(numero(produto.preco) * 100) *  
-        numero(item.quantidade);  
-}, 0) / 100;
-
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Registrar venda";
+        }
+    }
 }
 
 // =====================================================
@@ -817,119 +748,114 @@ async function carregarVendas() {
         `;
     }
 
-    const { data: vendasData, error: vendasError } =
-        await supabaseClient
-            .from("vendas")
-            .select("*")
-            .order("criado_em", { ascending: false });
+    const { data: vendasData, error: vendasError } = await supabaseClient
+        .from("vendas")
+        .select("*")
+        .order("criado_em", { ascending: false });
 
-if (vendasError) {  
-    console.error("Erro ao carregar vendas:", vendasError);  
+    if (vendasError) {
+        console.error("Erro ao carregar vendas:", vendasError);
 
-    if (salesList) {  
-        salesList.innerHTML = `  
-            <div class="empty-sales">Erro ao carregar as vendas.</div>  
-        `;  
-    }  
+        if (salesList) {
+            salesList.innerHTML = `
+                <div class="empty-sales">Erro ao carregar as vendas.</div>
+            `;
+        }
 
-    return;  
-}  
+        throw vendasError;
+    }
 
-if (!vendasData || vendasData.length === 0) {  
-    vendas = [];  
-    renderizarVendas();  
-    return;  
-}  
+    if (!vendasData || vendasData.length === 0) {
+        vendas = [];
+        renderizarVendas();
+        return;
+    }
 
-const clienteIds = [  
-    ...new Set(  
-        vendasData  
-            .map(venda => venda.cliente_id)  
-            .filter(id => id !== null && id !== undefined)  
-    )  
-];  
+    const clienteIds = [
+        ...new Set(
+            vendasData
+                .map(venda => venda.cliente_id)
+                .filter(id => id !== null && id !== undefined)
+        )
+    ];
 
-let clientes = [];  
+    let clientes = [];
 
-if (clienteIds.length > 0) {  
-    const { data, error } = await supabaseClient  
-        .from("clientes")  
-        .select("id, nome, telefone")  
-        .in("id", clienteIds);  
+    if (clienteIds.length > 0) {
+        const { data, error } = await supabaseClient
+            .from("clientes")
+            .select("id, nome, telefone")
+            .in("id", clienteIds);
 
-    if (error) {  
-        console.error("Erro ao carregar clientes:", error);  
-    } else {  
-        clientes = data || [];  
-    }  
-}  
+        if (error) {
+            console.error("Erro ao carregar clientes:", error);
+        } else {
+            clientes = data || [];
+        }
+    }
 
-const vendaIds = vendasData.map(venda => venda.id);  
+    const vendaIds = vendasData.map(venda => venda.id);
 
-const { data: itensData, error: itensError } =  
-    await supabaseClient  
-        .from("itens_venda")  
-        .select("*")  
-        .in("venda_id", vendaIds);  
+    const { data: itensData, error: itensError } = await supabaseClient
+        .from("itens_venda")
+        .select("*")
+        .in("venda_id", vendaIds);
 
-if (itensError) {  
-    console.error("Erro ao carregar itens das vendas:", itensError);  
-}  
+    if (itensError) {
+        console.error("Erro ao carregar itens das vendas:", itensError);
+    }
 
-const itens = itensData || [];  
+    const itens = itensData || [];
 
-const produtoIds = [  
-    ...new Set(  
-        itens  
-            .map(item => item.produto_id)  
-            .filter(id => id !== null && id !== undefined)  
-    )  
-];  
+    const produtoIds = [
+        ...new Set(
+            itens
+                .map(item => item.produto_id)
+                .filter(id => id !== null && id !== undefined)
+        )
+    ];
 
-let produtosVenda = [];  
+    let produtosVenda = [];
 
-if (produtoIds.length > 0) {  
-    const { data, error } = await supabaseClient  
-        .from("produtos")  
-        .select("id, nome, imagem_url, categoria, tamanho, cor")  
-        .in("id", produtoIds);  
+    if (produtoIds.length > 0) {
+        const { data, error } = await supabaseClient
+            .from("produtos")
+            .select("id, nome, imagem_url, categoria, tamanho, cor")
+            .in("id", produtoIds);
 
-    if (error) {  
-        console.error("Erro ao carregar produtos das vendas:", error);  
-    } else {  
-        produtosVenda = data || [];  
-    }  
-}  
+        if (error) {
+            console.error("Erro ao carregar produtos das vendas:", error);
+        } else {
+            produtosVenda = data || [];
+        }
+    }
 
-vendas = vendasData.map(venda => {  
-    const cliente = clientes.find(  
-        item => String(item.id) === String(venda.cliente_id)  
-    ) || null;  
+    vendas = vendasData.map(venda => {
+        const cliente = clientes.find(
+            item => String(item.id) === String(venda.cliente_id)
+        ) || null;
 
-    const itensDaVenda = itens  
-        .filter(  
-            item => String(item.venda_id) === String(venda.id)  
-        )  
-        .map(item => {  
-            const produto = produtosVenda.find(  
-                p => String(p.id) === String(item.produto_id)  
-            ) || null;  
+        const itensDaVenda = itens
+            .filter(item => String(item.venda_id) === String(venda.id))
+            .map(item => {
+                const produto = produtosVenda.find(
+                    p => String(p.id) === String(item.produto_id)
+                ) || null;
 
-            return {  
-                ...item,  
-                produtos: produto  
-            };  
-        });  
+                return {
+                    ...item,
+                    produtos: produto
+                };
+            });
 
-    return {  
-        ...venda,  
-        clientes: cliente,  
-        itens_venda: itensDaVenda  
-    };  
-});  
+        return {
+            ...venda,
+            clientes: cliente,
+            itens_venda: itensDaVenda
+        };
+    });
 
-renderizarVendas();
-
+    renderizarVendas();
 }
 
 // =====================================================
@@ -937,106 +863,81 @@ renderizarVendas();
 // =====================================================
 
 function renderizarVendas() {
-if (!salesList) return;
+    if (!salesList) return;
 
-const pesquisa = (  
-    elemento("sales-search")?.value || ""  
-).toLowerCase().trim();  
+    const pesquisa = (
+        elemento("sales-search")?.value || ""
+    ).toLowerCase().trim();
 
-let lista = [...vendas];  
+    let lista = [...vendas];
 
-if (abaAtual === "pendentes") {  
-    lista = lista.filter(vendaEstaPendente);  
-}  
+    if (abaAtual === "pendentes") {
+        lista = lista.filter(vendaEstaPendente);
+    }
 
-if (pesquisa) {  
-    lista = lista.filter(venda => {  
-        const nome =  
-            venda.clientes?.nome?.toLowerCase() || "";  
+    if (pesquisa) {
+        lista = lista.filter(venda => {
+            const nome = venda.clientes?.nome?.toLowerCase() || "";
+            const telefone = venda.clientes?.telefone || "";
 
-        const telefone =  
-            venda.clientes?.telefone || "";  
+            return nome.includes(pesquisa) || telefone.includes(pesquisa);
+        });
+    }
 
-        return (  
-            nome.includes(pesquisa) ||  
-            telefone.includes(pesquisa)  
-        );  
-    });  
-}  
+    if (lista.length === 0) {
+        salesList.innerHTML = `
+            <div class="empty-sales">Nenhuma venda encontrada.</div>
+        `;
+        return;
+    }
 
-if (lista.length === 0) {  
-    salesList.innerHTML = `  
-        <div class="empty-sales">Nenhuma venda encontrada.</div>  
-    `;  
+    salesList.innerHTML = "";
 
-    return;  
-}  
+    lista.forEach(venda => {
+        const card = document.createElement("div");
+        card.className = "sale-card";
 
-salesList.innerHTML = "";  
+        const nome = venda.clientes?.nome || "Cliente não informado";
+        const data = formatarData(venda.criado_em);
+        const statusPago = vendaEstaPaga(venda);
+        const quantidadeParcelas = numero(venda.quantidade_parcelas);
 
-lista.forEach(venda => {  
-    const card = document.createElement("div");  
+        const resumoParcelamento = venda.forma_pagamento === "parcelado"
+            ? `
+                <span class="sale-installments">
+                    ${quantidadeParcelas > 0
+                        ? `${quantidadeParcelas} parcelas`
+                        : "Venda parcelada"}
+                </span>
+            `
+            : "";
 
-    card.className = "sale-card";  
+        card.innerHTML = `
+            <div class="sale-card-top">
+                <div>
+                    <span class="sale-client">${escaparHTML(nome)}</span>
+                    <small>${escaparHTML(data)}</small>
+                </div>
 
-    const nome =  
-        venda.clientes?.nome || "Cliente não informado";  
+                <strong>R$ ${formatarMoeda(venda.valor_total)}</strong>
+            </div>
 
-    const data = formatarData(venda.criado_em);  
+            <div class="sale-card-bottom">
+                <div>
+                    <span>${escaparHTML(formatarPagamento(venda.forma_pagamento))}</span>
+                    ${resumoParcelamento}
+                </div>
 
-    const statusPago = vendaEstaPaga(venda);  
+                <span class="${statusPago ? "status-paid" : "status-pending"}">
+                    ${statusPago ? "✓ Pago" : "● Não pago"}
+                </span>
+            </div>
+        `;
 
-    const quantidadeParcelas =  
-        numero(venda.quantidade_parcelas);  
+        card.addEventListener("click", () => abrirDetalhes(venda));
 
-    const resumoParcelamento =  
-        venda.forma_pagamento === "parcelado"  
-            ? `  
-                <span class="sale-installments">  
-                    ${quantidadeParcelas > 0  
-                        ? `${quantidadeParcelas} parcelas`  
-                        : "Venda parcelada"}  
-                </span>  
-            `  
-            : "";  
-
-    card.innerHTML = `  
-        <div class="sale-card-top">  
-            <div>  
-                <span class="sale-client">  
-                    ${escaparHTML(nome)}  
-                </span>  
-
-                <small>${escaparHTML(data)}</small>  
-            </div>  
-
-            <strong>  
-                R$ ${formatarMoeda(venda.valor_total)}  
-            </strong>  
-        </div>  
-
-        <div class="sale-card-bottom">  
-            <div>  
-                <span>  
-                    ${escaparHTML(formatarPagamento(venda.forma_pagamento))}  
-                </span>  
-
-                ${resumoParcelamento}  
-            </div>  
-
-            <span class="${statusPago ? "status-paid" : "status-pending"}">  
-                ${statusPago ? "✓ Pago" : "● Não pago"}  
-            </span>  
-        </div>  
-    `;  
-
-    card.addEventListener("click", () => {  
-        abrirDetalhes(venda);  
-    });  
-
-    salesList.appendChild(card);  
-});
-
+        salesList.appendChild(card);
+    });
 }
 
 // =====================================================
@@ -1044,194 +945,160 @@ lista.forEach(venda => {
 // =====================================================
 
 function abrirDetalhes(venda) {
-if (excluindoVenda || atualizandoPagamento) return;
+    if (excluindoVenda || atualizandoPagamento) return;
 
-vendaEmDetalhes = venda;  
+    vendaEmDetalhes = venda;
 
-const nome =  
-    venda.clientes?.nome || "Cliente não informado";  
+    const nome = venda.clientes?.nome || "Cliente não informado";
+    const telefone = venda.clientes?.telefone || "Não informado";
+    const data = formatarData(venda.criado_em, true);
+    const pago = vendaEstaPaga(venda);
+    const detalhes = elemento("sale-details");
 
-const telefone =  
-    venda.clientes?.telefone || "Não informado";  
+    if (!detalhes) return;
 
-const data = formatarData(venda.criado_em, true);  
+    const itensHTML = (venda.itens_venda || [])
+        .map(item => {
+            const nomeProduto = obterNomeProduto(item.produtos);
 
-const pago = vendaEstaPaga(venda);  
+            return `
+                <div class="detail-item">
+                    <div>
+                        <strong>${escaparHTML(nomeProduto)}</strong>
 
-const detalhes = elemento("sale-details");  
+                        <span>
+                            ${numero(item.quantidade)} ×
+                            R$ ${formatarMoeda(item.preco_unitario)}
+                        </span>
+                    </div>
 
-if (!detalhes) return;  
+                    <strong>R$ ${formatarMoeda(item.subtotal)}</strong>
+                </div>
+            `;
+        })
+        .join("");
 
-const itensHTML = (venda.itens_venda || [])  
-    .map(item => {  
-        const produto = item.produtos;  
+    const observacaoHTML = venda.observacao
+        ? `
+            <div class="sale-note">
+                <strong>Observação</strong>
+                <p>${escaparHTML(venda.observacao)}</p>
+            </div>
+        `
+        : "";
 
-        const nomeProduto =  
-            obterNomeProduto(produto);  
+    const botaoPagamento = (
+        !pago &&
+        ["fiado", "parcelado"].includes(venda.forma_pagamento)
+    )
+        ? `
+            <button type="button" class="primary-button" id="mark-paid-button">
+                ✓ Marcar venda inteira como paga
+            </button>
+        `
+        : "";
 
-        return `  
-            <div class="detail-item">  
-                <div>  
-                    <strong>  
-                        ${escaparHTML(nomeProduto)}  
-                    </strong>  
+    const quantidadeParcelas = numero(venda.quantidade_parcelas);
+    let informacaoParcelas = "";
 
-                    <span>  
-                        ${numero(item.quantidade)} ×  
-                        R$ ${formatarMoeda(item.preco_unitario)}  
-                    </span>  
-                </div>  
+    if (venda.forma_pagamento === "parcelado") {
+        if (quantidadeParcelas >= 2) {
+            const parcelas = calcularParcelas(
+                venda.valor_total,
+                quantidadeParcelas
+            );
 
-                <strong>  
-                    R$ ${formatarMoeda(item.subtotal)}  
-                </strong>  
-            </div>  
-        `;  
-    })  
-    .join("");  
+            const valoresUnicos = [...new Set(parcelas)];
 
-const observacaoHTML = venda.observacao  
-    ? `  
-        <div class="sale-note">  
-            <strong>Observação</strong>  
-            <p>${escaparHTML(venda.observacao)}</p>  
-        </div>  
-    `  
-    : "";  
+            const resumo = valoresUnicos.length === 1
+                ? `${quantidadeParcelas}x de R$ ${formatarMoeda(parcelas[0])}`
+                : `${quantidadeParcelas} parcelas, de R$ ${formatarMoeda(Math.min(...parcelas))} a R$ ${formatarMoeda(Math.max(...parcelas))}`;
 
-const botaoPagamento = (  
-    !pago &&  
-    ["fiado", "parcelado"].includes(venda.forma_pagamento)  
-)  
-    ? `  
-        <button  
-            type="button"  
-            class="primary-button"  
-            id="mark-paid-button"  
-        >  
-            ✓ Marcar venda inteira como paga  
-        </button>  
-    `  
-    : "";  
+            informacaoParcelas = `
+                <div class="installment-details">
+                    <p>
+                        <strong>Quantidade de parcelas:</strong>
+                        ${quantidadeParcelas}x
+                    </p>
 
-const quantidadeParcelas =  
-    numero(venda.quantidade_parcelas);  
+                    <p>
+                        <strong>Valor das parcelas:</strong>
+                        ${escaparHTML(resumo)}
+                    </p>
 
-let informacaoParcelas = "";  
+                    <div class="installment-list">
+                        ${parcelas.map((valor, index) => `
+                            <div class="installment-row">
+                                <span>Parcela ${index + 1}/${quantidadeParcelas}</span>
+                                <strong>R$ ${formatarMoeda(valor)}</strong>
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            `;
+        } else {
+            informacaoParcelas = `
+                <p>
+                    <strong>Parcelamento:</strong>
+                    Quantidade não informada
+                </p>
+            `;
+        }
+    }
 
-if (venda.forma_pagamento === "parcelado") {  
-    if (quantidadeParcelas >= 2) {  
-        const parcelas = calcularParcelas(  
-            venda.valor_total,  
-            quantidadeParcelas  
-        );  
+    detalhes.innerHTML = `
+        <span class="section-label">DETALHES DA VENDA</span>
 
-        const valoresUnicos = [...new Set(parcelas)];  
+        <h2>${escaparHTML(nome)}</h2>
 
-        const resumo = valoresUnicos.length === 1  
-            ? `${quantidadeParcelas}x de R$ ${formatarMoeda(parcelas[0])}`  
-            : `${quantidadeParcelas} parcelas, de R$ ${formatarMoeda(Math.min(...parcelas))} a R$ ${formatarMoeda(Math.max(...parcelas))}`;  
+        <div class="details-info">
+            <p><strong>Telefone:</strong> ${escaparHTML(telefone)}</p>
+            <p><strong>Data:</strong> ${escaparHTML(data)}</p>
+            ${informacaoParcelas}
+        </div>
 
-        informacaoParcelas = `  
-            <div class="installment-details">  
-                <p>  
-                    <strong>Quantidade de parcelas:</strong>  
-                    ${quantidadeParcelas}x  
-                </p>  
+        <h3>Produtos</h3>
 
-                <p>  
-                    <strong>Valor das parcelas:</strong>  
-                    ${escaparHTML(resumo)}  
-                </p>  
+        <div class="details-items">
+            ${itensHTML || "<p>Nenhum item encontrado.</p>"}
+        </div>
 
-                <div class="installment-list">  
-                    ${parcelas.map((valor, index) => `  
-                        <div class="installment-row">  
-                            <span>Parcela ${index + 1}/${quantidadeParcelas}</span>  
-                            <strong>R$ ${formatarMoeda(valor)}</strong>  
-                        </div>  
-                    `).join("")}  
-                </div>  
-            </div>  
-        `;  
-    } else {  
-        informacaoParcelas = `  
-            <p>  
-                <strong>Parcelamento:</strong>  
-                Quantidade não informada  
-            </p>  
-        `;  
-    }  
-}  
+        <div class="details-total">
+            <span>Total</span>
+            <strong>R$ ${formatarMoeda(venda.valor_total)}</strong>
+        </div>
 
-detalhes.innerHTML = `  
-    <span class="section-label">DETALHES DA VENDA</span>  
+        <div class="details-payment">
+            <span>${escaparHTML(formatarPagamento(venda.forma_pagamento))}</span>
 
-    <h2>${escaparHTML(nome)}</h2>  
+            <strong class="${pago ? "status-paid" : "status-pending"}">
+                ${pago ? "✓ PAGO" : "● NÃO PAGO"}
+            </strong>
+        </div>
 
-    <div class="details-info">  
-        <p>  
-            <strong>Telefone:</strong>  
-            ${escaparHTML(telefone)}  
-        </p>  
+        ${observacaoHTML}
+        ${botaoPagamento}
 
-        <p>  
-            <strong>Data:</strong>  
-            ${escaparHTML(data)}  
-        </p>  
+        <button
+            type="button"
+            class="delete-sale-button"
+            id="delete-sale-button"
+        >
+            Excluir venda
+        </button>
+    `;
 
-        ${informacaoParcelas}  
-    </div>  
+    elemento("mark-paid-button")?.addEventListener(
+        "click",
+        () => marcarComoPago(venda.id)
+    );
 
-    <h3>Produtos</h3>  
+    elemento("delete-sale-button")?.addEventListener(
+        "click",
+        () => excluirVenda(venda.id)
+    );
 
-    <div class="details-items">  
-        ${itensHTML || "<p>Nenhum item encontrado.</p>"}  
-    </div>  
-
-    <div class="details-total">  
-        <span>Total</span>  
-
-        <strong>  
-            R$ ${formatarMoeda(venda.valor_total)}  
-        </strong>  
-    </div>  
-
-    <div class="details-payment">  
-        <span>  
-            ${escaparHTML(formatarPagamento(venda.forma_pagamento))}  
-        </span>  
-
-        <strong class="${pago ? "status-paid" : "status-pending"}">  
-            ${pago ? "✓ PAGO" : "● NÃO PAGO"}  
-        </strong>  
-    </div>  
-
-    ${observacaoHTML}  
-
-    ${botaoPagamento}  
-
-    <button  
-        type="button"  
-        class="delete-sale-button"  
-        id="delete-sale-button"  
-    >  
-        Excluir venda  
-    </button>  
-`;  
-
-elemento("mark-paid-button")?.addEventListener(  
-    "click",  
-    () => marcarComoPago(venda.id)  
-);  
-
-elemento("delete-sale-button")?.addEventListener(  
-    "click",  
-    () => excluirVenda(venda.id)  
-);  
-
-detailsModal?.classList.add("show");
-
+    detailsModal?.classList.add("show");
 }
 
 // =====================================================
@@ -1239,64 +1106,57 @@ detailsModal?.classList.add("show");
 // =====================================================
 
 async function marcarComoPago(vendaId) {
-if (atualizandoPagamento || excluindoVenda) return;
+    if (atualizandoPagamento || excluindoVenda) return;
 
-if (  
-    !confirm(  
-        "Confirmar o recebimento integral desta venda?"  
-    )  
-) {  
-    return;  
-}  
+    if (!confirm("Confirmar o recebimento integral desta venda?")) {
+        return;
+    }
 
-atualizandoPagamento = true;  
+    atualizandoPagamento = true;
 
-const botao = elemento("mark-paid-button");  
+    const botao = elemento("mark-paid-button");
 
-if (botao) {  
-    botao.disabled = true;  
-    botao.textContent = "Atualizando...";  
-}  
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "Atualizando...";
+    }
 
-let confirmado = false;  
+    let confirmado = false;
 
-try {  
-    const { error } = await supabaseClient.rpc(  
-        "marcar_venda_paga",  
-        {  
-            p_venda_id: vendaId  
-        }  
-    );  
+    try {
+        const { error } = await supabaseClient.rpc(
+            "marcar_venda_paga",
+            { p_venda_id: vendaId }
+        );
 
-    if (error) throw error;  
+        if (error) throw error;
 
-    confirmado = true;  
+        confirmado = true;
 
-    alert("Venda marcada como paga!");  
+        alert("Venda marcada como paga!");
 
-    fecharDetalhes(true);  
+        fecharDetalhes(true);
 
-    await carregarVendas();  
-    await atualizarResumo();  
+        await carregarVendas();
+        await atualizarResumo();
 
-    atualizarPreviewRelatorio();  
+        atualizarPreviewRelatorio();
 
-} catch (error) {  
-    mostrarErro(  
-        confirmado  
-            ? "Pagamento salvo, mas a tela não atualizou. Recarregue a página."  
-            : "Não foi possível confirmar o pagamento. Confira a venda antes de tentar novamente.",  
-        error  
-    );  
-} finally {  
-    atualizandoPagamento = false;  
+    } catch (error) {
+        mostrarErro(
+            confirmado
+                ? "Pagamento salvo, mas a tela não atualizou. Recarregue a página."
+                : "Não foi possível confirmar o pagamento. Confira a venda antes de tentar novamente.",
+            error
+        );
+    } finally {
+        atualizandoPagamento = false;
 
-    if (botao) {  
-        botao.disabled = false;  
-        botao.textContent = "✓ Marcar venda inteira como paga";  
-    }  
-}
-
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = "✓ Marcar venda inteira como paga";
+        }
+    }
 }
 
 // =====================================================
@@ -1304,87 +1164,83 @@ try {
 // =====================================================
 
 async function excluirVenda(vendaId) {
-if (excluindoVenda || atualizandoPagamento) return;
+    if (excluindoVenda || atualizandoPagamento) return;
 
-const venda = vendas.find(  
-    item => String(item.id) === String(vendaId)  
-);  
+    const venda = vendas.find(
+        item => String(item.id) === String(vendaId)
+    );
 
-if (!venda) {  
-    alert("Venda não encontrada.");  
-    return;  
-}  
+    if (!venda) {
+        alert("Venda não encontrada.");
+        return;
+    }
 
-const cliente =  
-    venda.clientes?.nome || "Cliente não informado";  
+    const cliente = venda.clientes?.nome || "Cliente não informado";
 
-const confirmar = confirm(  
-    `Deseja excluir esta venda?\n\n` +  
-    `Cliente: ${cliente}\n` +  
-    `Valor: R$ ${formatarMoeda(venda.valor_total)}\n\n` +  
-    `Essa ação não poderá ser desfeita.`  
-);  
+    const confirmar = confirm(
+        `Deseja excluir esta venda?\n\n` +
+        `Cliente: ${cliente}\n` +
+        `Valor: R$ ${formatarMoeda(venda.valor_total)}\n\n` +
+        `Essa ação não poderá ser desfeita.`
+    );
 
-if (!confirmar) return;  
+    if (!confirmar) return;
 
-excluindoVenda = true;  
+    excluindoVenda = true;
 
-let excluida = false;  
+    const botao = elemento("delete-sale-button");
 
-const botao = elemento("delete-sale-button");  
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "Excluindo...";
+    }
 
-if (botao) {  
-    botao.disabled = true;  
-    botao.textContent = "Excluindo...";  
-}  
+    let excluida = false;
 
-try {  
-    const { error } = await supabaseClient.rpc(  
-        "excluir_venda",  
-        {  
-            p_venda_id: vendaId  
-        }  
-    );  
+    try {
+        const { error } = await supabaseClient.rpc(
+            "excluir_venda",
+            { p_venda_id: vendaId }
+        );
 
-    if (error) {  
-        if (rpcAusente(error)) {  
-            throw new Error(  
-                "Exclusão ainda não configurada no banco. " +  
-                "Configure excluir_venda no Supabase, incluindo os itens e o estoque."  
-            );  
-        }  
+        if (error) {
+            if (rpcAusente(error)) {
+                throw new Error(
+                    "Exclusão ainda não configurada no banco. " +
+                    "Configure excluir_venda no Supabase, incluindo os itens e o estoque."
+                );
+            }
 
-        throw error;  
-    }  
+            throw error;
+        }
 
-    excluida = true;  
+        excluida = true;
 
-    alert("Venda excluída com sucesso!");  
+        alert("Venda excluída com sucesso!");
 
-    fecharDetalhes(true);  
+        fecharDetalhes(true);
 
-    await carregarProdutos();  
-    await carregarVendas();  
-    await atualizarResumo();  
+        await carregarProdutos();
+        await carregarVendas();
+        await atualizarResumo();
 
-    atualizarPreviewRelatorio();  
+        atualizarPreviewRelatorio();
 
-} catch (error) {  
-    mostrarErro(  
-        excluida  
-            ? "Venda excluída, mas a tela não atualizou. Recarregue a página."  
-            : "Não foi possível confirmar a exclusão. Confira a venda antes de tentar novamente.",  
-        error  
-    );  
-} finally {  
-    excluindoVenda = false;  
+    } catch (error) {
+        mostrarErro(
+            excluida
+                ? "Venda excluída, mas a tela não atualizou. Recarregue a página."
+                : "Não foi possível confirmar a exclusão. Confira a venda antes de tentar novamente.",
+            error
+        );
+    } finally {
+        excluindoVenda = false;
 
-    if (botao) {  
-        botao.disabled = false;  
-        botao.textContent = "Excluir venda";  
-    }  
-}
-
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = "Excluir venda";
+        }
+    }
 }
 
 // =====================================================
@@ -1392,39 +1248,35 @@ try {
 // =====================================================
 
 async function atualizarResumo() {
-const hoje = new Date();
+    const hoje = new Date();
 
-const inicio = new Date(  
-    hoje.getFullYear(),  
-    hoje.getMonth(),  
-    hoje.getDate()  
-);  
+    const inicio = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate()
+    );
 
-const vendasHoje = vendas.filter(venda => {  
-    const data = new Date(venda.criado_em);  
+    const vendasHoje = vendas.filter(venda => {
+        const data = new Date(venda.criado_em);
 
-    return (  
-        !Number.isNaN(data.getTime()) &&  
-        data >= inicio  
-    );  
-});  
+        return !Number.isNaN(data.getTime()) && data >= inicio;
+    });
 
-const totalHoje = vendasHoje.reduce(  
-    (total, venda) => total + numero(venda.valor_total),  
-    0  
-);  
+    const totalHoje = vendasHoje.reduce(
+        (total, venda) => total + numero(venda.valor_total),
+        0
+    );
 
-const pendentes = vendas.filter(vendaEstaPendente);  
+    const pendentes = vendas.filter(vendaEstaPendente);
 
-const totalPendente = pendentes.reduce(  
-    (total, venda) => total + numero(venda.valor_total),  
-    0  
-);  
+    const totalPendente = pendentes.reduce(
+        (total, venda) => total + numero(venda.valor_total),
+        0
+    );
 
-texto("sales-today", `R$ ${formatarMoeda(totalHoje)}`);  
-texto("sales-count", vendas.length);  
-texto("pending-value", `R$ ${formatarMoeda(totalPendente)}`);
-
+    texto("sales-today", `R$ ${formatarMoeda(totalHoje)}`);
+    texto("sales-count", vendas.length);
+    texto("pending-value", `R$ ${formatarMoeda(totalPendente)}`);
 }
 
 // =====================================================
@@ -1432,54 +1284,46 @@ texto("pending-value", `R$ ${formatarMoeda(totalPendente)}`);
 // =====================================================
 
 function abrirModalVenda() {
-if (salvandoVenda) return;
+    if (salvandoVenda) return;
 
-itensVenda = [];  
+    itensVenda = [];
 
-saleForm?.reset();  
+    saleForm?.reset();
 
-renderizarItens();  
+    renderizarItens();
+    configurarVisibilidadeParcelamento();
 
-configurarVisibilidadeParcelamento();  
-
-saleModal?.classList.add("show");
-
+    saleModal?.classList.add("show");
 }
 
 function configurarVisibilidadeParcelamento() {
-const pagamento = elemento("payment-method");
-const opcoes = elemento("installment-options");
+    const pagamento = elemento("payment-method");
+    const opcoes = elemento("installment-options");
 
-if (!pagamento || !opcoes) return;  
+    if (!pagamento || !opcoes) return;
 
-opcoes.style.display =  
-    pagamento.value === "parcelado"  
-        ? "block"  
-        : "none";  
+    opcoes.style.display =
+        pagamento.value === "parcelado" ? "block" : "none";
 
-atualizarValorParcela();
-
+    atualizarValorParcela();
 }
 
 function fecharModalVenda(forcar = false) {
-if (salvandoVenda && forcar !== true) return;
+    if (salvandoVenda && forcar !== true) return;
 
-saleModal?.classList.remove("show");
-
+    saleModal?.classList.remove("show");
 }
 
 function fecharDetalhes(forcar = false) {
-if (
-(excluindoVenda || atualizandoPagamento) &&
-forcar !== true
-) {
-return;
-}
+    if (
+        (excluindoVenda || atualizandoPagamento) &&
+        forcar !== true
+    ) {
+        return;
+    }
 
-detailsModal?.classList.remove("show");  
-
-vendaEmDetalhes = null;
-
+    detailsModal?.classList.remove("show");
+    vendaEmDetalhes = null;
 }
 
 // =====================================================
@@ -1487,89 +1331,79 @@ vendaEmDetalhes = null;
 // =====================================================
 
 function configurarEventos() {
-if (saleProduct) {
-saleProduct.required = false;
-}
+    if (saleProduct) {
+        saleProduct.required = false;
+    }
 
-elemento("open-sale-button")?.addEventListener(  
-    "click",  
-    abrirModalVenda  
-);  
+    elemento("open-sale-button")?.addEventListener(
+        "click",
+        abrirModalVenda
+    );
 
-elemento("close-sale-modal")?.addEventListener(  
-    "click",  
-    fecharModalVenda  
-);  
+    elemento("close-sale-modal")?.addEventListener(
+        "click",
+        () => fecharModalVenda()
+    );
 
-elemento("close-details-modal")?.addEventListener(  
-    "click",  
-    fecharDetalhes  
-);  
+    elemento("close-details-modal")?.addEventListener(
+        "click",
+        () => fecharDetalhes()
+    );
 
-elemento("add-sale-product")?.addEventListener(  
-    "click",  
-    adicionarProdutoVenda  
-);  
+    elemento("add-sale-product")?.addEventListener(
+        "click",
+        adicionarProdutoVenda
+    );
 
-saleItems?.addEventListener("click", event => {  
-    const botao = event.target.closest(  
-        "[data-remover-item]"  
-    );  
+    saleItems?.addEventListener("click", event => {
+        const botao = event.target.closest("[data-remover-item]");
 
-    if (!botao) return;  
+        if (!botao) return;
 
-    removerItem(Number(botao.dataset.removerItem));  
-});  
+        removerItem(Number(botao.dataset.removerItem));
+    });
 
-saleForm?.addEventListener(  
-    "submit",  
-    registrarVenda  
-);  
+    saleForm?.addEventListener("submit", registrarVenda);
 
-elemento("logout-button")?.addEventListener(  
-    "click",  
-    sair  
-);  
+    elemento("logout-button")?.addEventListener("click", sair);
 
-elemento("sales-search")?.addEventListener(  
-    "input",  
-    renderizarVendas  
-);  
+    elemento("sales-search")?.addEventListener(
+        "input",
+        renderizarVendas
+    );
 
-elemento("tab-sales")?.addEventListener("click", () => {  
-    abaAtual = "todas";  
+    elemento("tab-sales")?.addEventListener("click", () => {
+        abaAtual = "todas";
 
-    elemento("tab-sales")?.classList.add("active");  
-    elemento("tab-pending")?.classList.remove("active");  
+        elemento("tab-sales")?.classList.add("active");
+        elemento("tab-pending")?.classList.remove("active");
 
-    renderizarVendas();  
-});  
+        renderizarVendas();
+    });
 
-elemento("tab-pending")?.addEventListener("click", () => {  
-    abaAtual = "pendentes";  
+    elemento("tab-pending")?.addEventListener("click", () => {
+        abaAtual = "pendentes";
 
-    elemento("tab-pending")?.classList.add("active");  
-    elemento("tab-sales")?.classList.remove("active");  
+        elemento("tab-pending")?.classList.add("active");
+        elemento("tab-sales")?.classList.remove("active");
 
-    renderizarVendas();  
-});  
+        renderizarVendas();
+    });
 
-configurarParcelamento();  
+    configurarParcelamento();
+    configurarEventosRelatorios();
 
-configurarEventosRelatorios();  
+    detailsModal?.addEventListener("click", event => {
+        if (event.target === detailsModal) {
+            fecharDetalhes();
+        }
+    });
 
-detailsModal?.addEventListener("click", event => {  
-    if (event.target === detailsModal) {  
-        fecharDetalhes();  
-    }  
-});  
-
-saleModal?.addEventListener("click", event => {  
-    if (event.target === saleModal) {  
-        fecharModalVenda();  
-    }  
-});
-
+    saleModal?.addEventListener("click", event => {
+        if (event.target === saleModal) {
+            fecharModalVenda();
+        }
+    });
 }
 
 // =====================================================
@@ -1577,16 +1411,15 @@ saleModal?.addEventListener("click", event => {
 // =====================================================
 
 function formatarPagamento(pagamento) {
-const nomes = {
-pix: "Pix",
-dinheiro: "Dinheiro",
-cartao: "Cartão",
-fiado: "Fiado",
-parcelado: "Parcelado"
-};
+    const nomes = {
+        pix: "Pix",
+        dinheiro: "Dinheiro",
+        cartao: "Cartão",
+        fiado: "Fiado",
+        parcelado: "Parcelado"
+    };
 
-return nomes[pagamento] || pagamento || "Não informado";
-
+    return nomes[pagamento] || pagamento || "Não informado";
 }
 
 // =====================================================
@@ -1594,72 +1427,63 @@ return nomes[pagamento] || pagamento || "Não informado";
 // =====================================================
 
 function abrirModalRelatorio() {
-const hoje = new Date();
+    const hoje = new Date();
+    const hojeFormatado = dataLocalISO(hoje);
 
-const hojeFormatado = dataLocalISO(hoje);  
+    if (reportStartDate && !reportStartDate.value) {
+        reportStartDate.value =
+            `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-01`;
+    }
 
-if (reportStartDate && !reportStartDate.value) {  
-    reportStartDate.value =  
-        `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-01`;  
-}  
+    if (reportEndDate && !reportEndDate.value) {
+        reportEndDate.value = hojeFormatado;
+    }
 
-if (reportEndDate && !reportEndDate.value) {  
-    reportEndDate.value = hojeFormatado;  
-}  
+    atualizarPreviewRelatorio();
 
-atualizarPreviewRelatorio();  
-
-reportModal?.classList.add("show");
-
+    reportModal?.classList.add("show");
 }
 
 function fecharModalRelatorio() {
-reportModal?.classList.remove("show");
+    reportModal?.classList.remove("show");
 }
 
 function obterVendasRelatorio() {
-const inicio = reportStartDate?.value
-? new Date(${reportStartDate.value}T00:00:00)
-: null;
+    const inicio = reportStartDate?.value
+        ? new Date(`${reportStartDate.value}T00:00:00`)
+        : null;
 
-const fim = reportEndDate?.value  
-    ? new Date(`${reportEndDate.value}T23:59:59.999`)  
-    : null;  
+    const fim = reportEndDate?.value
+        ? new Date(`${reportEndDate.value}T23:59:59.999`)
+        : null;
 
-const status = reportStatus?.value || "todas";  
+    const status = reportStatus?.value || "todas";
 
-return vendas.filter(venda => {  
-    const dataVenda = new Date(venda.criado_em);  
+    return vendas.filter(venda => {
+        const dataVenda = new Date(venda.criado_em);
 
-    if (Number.isNaN(dataVenda.getTime())) {  
-        return false;  
-    }  
+        if (Number.isNaN(dataVenda.getTime())) {
+            return false;
+        }
 
-    if (inicio && dataVenda < inicio) {  
-        return false;  
-    }  
+        if (inicio && dataVenda < inicio) {
+            return false;
+        }
 
-    if (fim && dataVenda > fim) {  
-        return false;  
-    }  
+        if (fim && dataVenda > fim) {
+            return false;
+        }
 
-    if (  
-        status === "pagas" &&  
-        !vendaEstaPaga(venda)  
-    ) {  
-        return false;  
-    }  
+        if (status === "pagas" && !vendaEstaPaga(venda)) {
+            return false;
+        }
 
-    if (  
-        status === "pendentes" &&  
-        !vendaEstaPendente(venda)  
-    ) {  
-        return false;  
-    }  
+        if (status === "pendentes" && !vendaEstaPendente(venda)) {
+            return false;
+        }
 
-    return true;  
-});
-
+        return true;
+    });
 }
 
 // =====================================================
@@ -1667,31 +1491,30 @@ return vendas.filter(venda => {
 // =====================================================
 
 function atualizarPreviewRelatorio() {
-const lista = obterVendasRelatorio();
+    const lista = obterVendasRelatorio();
 
-const total = lista.reduce(  
-    (soma, venda) => soma + numero(venda.valor_total),  
-    0  
-);  
+    const total = lista.reduce(
+        (soma, venda) => soma + numero(venda.valor_total),
+        0
+    );
 
-const pendente = lista.reduce((soma, venda) => {  
-    if (vendaEstaPendente(venda)) {  
-        return soma + numero(venda.valor_total);  
-    }  
+    const pendente = lista.reduce((soma, venda) => {
+        if (vendaEstaPendente(venda)) {
+            return soma + numero(venda.valor_total);
+        }
 
-    return soma;  
-}, 0);  
+        return soma;
+    }, 0);
 
-texto("report-count", lista.length);  
-texto("report-total", `R$ ${formatarMoeda(total)}`);  
-texto("report-pending", `R$ ${formatarMoeda(pendente)}`);  
+    texto("report-count", lista.length);
+    texto("report-total", `R$ ${formatarMoeda(total)}`);
+    texto("report-pending", `R$ ${formatarMoeda(pendente)}`);
 
-if (reportMessage) {  
-    reportMessage.textContent = lista.length  
-        ? `${lista.length} venda(s) encontrada(s).`  
-        : "Nenhuma venda encontrada para os filtros selecionados.";  
-}
-
+    if (reportMessage) {
+        reportMessage.textContent = lista.length
+            ? `${lista.length} venda(s) encontrada(s).`
+            : "Nenhuma venda encontrada para os filtros selecionados.";
+    }
 }
 
 // =====================================================
@@ -1699,41 +1522,35 @@ if (reportMessage) {
 // =====================================================
 
 function prepararDadosRelatorio() {
-return obterVendasRelatorio().map(venda => {
-const produtosTexto = (venda.itens_venda || [])
-.map(item => {
-const nome = obterNomeProduto(item.produtos);
+    return obterVendasRelatorio().map(venda => {
+        const produtosTexto = (venda.itens_venda || [])
+            .map(item => {
+                const nome = obterNomeProduto(item.produtos);
 
-return `${item.quantidade}x ${nome}`;  
-        })  
-        .join(", ");  
+                return `${item.quantidade}x ${nome}`;
+            })
+            .join(", ");
 
-    const quantidadeParcelas =  
-        numero(venda.quantidade_parcelas);  
+        const quantidadeParcelas = numero(venda.quantidade_parcelas);
 
-    let pagamento = formatarPagamento(  
-        venda.forma_pagamento  
-    );  
+        let pagamento = formatarPagamento(venda.forma_pagamento);
 
-    if (  
-        venda.forma_pagamento === "parcelado" &&  
-        quantidadeParcelas > 0  
-    ) {  
-        pagamento += ` (${quantidadeParcelas} parcelas)`;  
-    }  
+        if (
+            venda.forma_pagamento === "parcelado" &&
+            quantidadeParcelas > 0
+        ) {
+            pagamento += ` (${quantidadeParcelas} parcelas)`;
+        }
 
-    return {  
-        data: formatarData(venda.criado_em),  
-        cliente: venda.clientes?.nome || "Não informado",  
-        produtos: produtosTexto,  
-        pagamento,  
-        status: vendaEstaPaga(venda)  
-            ? "Pago"  
-            : "Não pago",  
-        valor: numero(venda.valor_total)  
-    };  
-});
-
+        return {
+            data: formatarData(venda.criado_em),
+            cliente: venda.clientes?.nome || "Não informado",
+            produtos: produtosTexto,
+            pagamento,
+            status: vendaEstaPaga(venda) ? "Pago" : "Não pago",
+            valor: numero(venda.valor_total)
+        };
+    });
 }
 
 // =====================================================
@@ -1741,84 +1558,80 @@ return `${item.quantidade}x ${nome}`;
 // =====================================================
 
 function exportarExcel() {
-if (typeof XLSX === "undefined") {
-alert("A biblioteca XLSX não foi carregada.");
-return;
-}
+    if (typeof XLSX === "undefined") {
+        alert("A biblioteca XLSX não foi carregada.");
+        return;
+    }
 
-const dados = prepararDadosRelatorio();  
+    const dados = prepararDadosRelatorio();
 
-if (dados.length === 0) {  
-    alert(  
-        "Nenhuma venda encontrada para o período selecionado."  
-    );  
+    if (dados.length === 0) {
+        alert("Nenhuma venda encontrada para o período selecionado.");
+        return;
+    }
 
-    return;  
-}  
+    const total = dados.reduce(
+        (soma, venda) => soma + venda.valor,
+        0
+    );
 
-const total = dados.reduce(  
-    (soma, venda) => soma + venda.valor,  
-    0  
-);  
+    const pendente = dados.reduce((soma, venda) => {
+        return venda.status === "Não pago"
+            ? soma + venda.valor
+            : soma;
+    }, 0);
 
-const pendente = dados.reduce((soma, venda) => {  
-    return venda.status === "Não pago"  
-        ? soma + venda.valor  
-        : soma;  
-}, 0);  
+    const linhas = [
+        ["MARY BOUTIQUE"],
+        ["RELATÓRIO DE VENDAS"],
+        [],
+        ["Período inicial", reportStartDate?.value || "Todos"],
+        ["Período final", reportEndDate?.value || "Todos"],
+        [],
+        ["Quantidade de vendas", dados.length],
+        ["Total vendido", total],
+        ["Valores não pagos", pendente],
+        [],
+        ["Data", "Cliente", "Produtos", "Pagamento", "Status", "Valor"]
+    ];
 
-const linhas = [  
-    ["MARY BOUTIQUE"],  
-    ["RELATÓRIO DE VENDAS"],  
-    [],  
-    ["Período inicial", reportStartDate?.value || "Todos"],  
-    ["Período final", reportEndDate?.value || "Todos"],  
-    [],  
-    ["Quantidade de vendas", dados.length],  
-    ["Total vendido", total],  
-    ["Valores não pagos", pendente],  
-    [],  
-    ["Data", "Cliente", "Produtos", "Pagamento", "Status", "Valor"]  
-];  
+    dados.forEach(venda => {
+        linhas.push([
+            venda.data,
+            venda.cliente,
+            venda.produtos,
+            venda.pagamento,
+            venda.status,
+            venda.valor
+        ]);
+    });
 
-dados.forEach(venda => {  
-    linhas.push([  
-        venda.data,  
-        venda.cliente,  
-        venda.produtos,  
-        venda.pagamento,  
-        venda.status,  
-        venda.valor  
-    ]);  
-});  
+    const worksheet = XLSX.utils.aoa_to_sheet(linhas);
 
-const worksheet = XLSX.utils.aoa_to_sheet(linhas);  
+    worksheet["!cols"] = [
+        { wch: 14 },
+        { wch: 25 },
+        { wch: 45 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 15 }
+    ];
 
-worksheet["!cols"] = [  
-    { wch: 14 },  
-    { wch: 25 },  
-    { wch: 45 },  
-    { wch: 25 },  
-    { wch: 15 },  
-    { wch: 15 }  
-];  
+    const workbook = XLSX.utils.book_new();
 
-const workbook = XLSX.utils.book_new();  
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Vendas"
+    );
 
-XLSX.utils.book_append_sheet(  
-    workbook,  
-    worksheet,  
-    "Vendas"  
-);  
+    const inicio = reportStartDate?.value || "inicio";
+    const fim = reportEndDate?.value || "fim";
 
-const inicio = reportStartDate?.value || "inicio";  
-const fim = reportEndDate?.value || "fim";  
-
-XLSX.writeFile(  
-    workbook,  
-    `Mary-Boutique-Vendas-${inicio}-ate-${fim}.xlsx`  
-);
-
+    XLSX.writeFile(
+        workbook,
+        `Mary-Boutique-Vendas-${inicio}-ate-${fim}.xlsx`
+    );
 }
 
 // =====================================================
@@ -1826,163 +1639,155 @@ XLSX.writeFile(
 // =====================================================
 
 function exportarPDF() {
-if (!window.jspdf?.jsPDF) {
-alert("A biblioteca jsPDF não foi carregada.");
-return;
-}
+    if (!window.jspdf?.jsPDF) {
+        alert("A biblioteca jsPDF não foi carregada.");
+        return;
+    }
 
-const dados = prepararDadosRelatorio();  
+    const dados = prepararDadosRelatorio();
 
-if (dados.length === 0) {  
-    alert(  
-        "Nenhuma venda encontrada para o período selecionado."  
-    );  
+    if (dados.length === 0) {
+        alert("Nenhuma venda encontrada para o período selecionado.");
+        return;
+    }
 
-    return;  
-}  
+    const { jsPDF } = window.jspdf;
 
-const { jsPDF } = window.jspdf;  
+    const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+    });
 
-const doc = new jsPDF({  
-    orientation: "landscape",  
-    unit: "mm",  
-    format: "a4"  
-});  
+    const total = dados.reduce(
+        (soma, venda) => soma + venda.valor,
+        0
+    );
 
-const total = dados.reduce(  
-    (soma, venda) => soma + venda.valor,  
-    0  
-);  
+    const recebido = dados.reduce((soma, venda) => {
+        return venda.status === "Pago"
+            ? soma + venda.valor
+            : soma;
+    }, 0);
 
-const recebido = dados.reduce((soma, venda) => {  
-    return venda.status === "Pago"  
-        ? soma + venda.valor  
-        : soma;  
-}, 0);  
+    const pendente = dados.reduce((soma, venda) => {
+        return venda.status === "Não pago"
+            ? soma + venda.valor
+            : soma;
+    }, 0);
 
-const pendente = dados.reduce((soma, venda) => {  
-    return venda.status === "Não pago"  
-        ? soma + venda.valor  
-        : soma;  
-}, 0);  
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("MARY BOUTIQUE", 14, 18);
 
-doc.setFontSize(20);  
-doc.setFont("helvetica", "bold");  
-doc.text("MARY BOUTIQUE", 14, 18);  
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "normal");
+    doc.text("Relatório de Vendas", 14, 27);
 
-doc.setFontSize(13);  
-doc.setFont("helvetica", "normal");  
-doc.text("Relatório de Vendas", 14, 27);  
+    doc.setFontSize(9);
 
-doc.setFontSize(9);  
+    doc.text(
+        `Período: ${reportStartDate?.value || "Todos"} até ${reportEndDate?.value || "Todos"}`,
+        14,
+        35
+    );
 
-doc.text(  
-    `Período: ${reportStartDate?.value || "Todos"} até ${reportEndDate?.value || "Todos"}`,  
-    14,  
-    35  
-);  
+    doc.setFontSize(10);
 
-doc.setFontSize(10);  
+    doc.text(`Vendas: ${dados.length}`, 14, 45);
 
-doc.text(`Vendas: ${dados.length}`, 14, 45);  
+    doc.text(
+        `Total vendido: R$ ${formatarMoeda(total)}`,
+        70,
+        45
+    );
 
-doc.text(  
-    `Total vendido: R$ ${formatarMoeda(total)}`,  
-    70,  
-    45  
-);  
+    doc.text(
+        `Recebido: R$ ${formatarMoeda(recebido)}`,
+        145,
+        45
+    );
 
-doc.text(  
-    `Recebido: R$ ${formatarMoeda(recebido)}`,  
-    145,  
-    45  
-);  
+    doc.text(
+        `Valores não pagos: R$ ${formatarMoeda(pendente)}`,
+        215,
+        45
+    );
 
-doc.text(  
-    `Valores não pagos: R$ ${formatarMoeda(pendente)}`,  
-    215,  
-    45  
-);  
+    const tabela = dados.map(venda => [
+        venda.data,
+        venda.cliente,
+        venda.produtos,
+        venda.pagamento,
+        venda.status,
+        `R$ ${formatarMoeda(venda.valor)}`
+    ]);
 
-const tabela = dados.map(venda => [  
-    venda.data,  
-    venda.cliente,  
-    venda.produtos,  
-    venda.pagamento,  
-    venda.status,  
-    `R$ ${formatarMoeda(venda.valor)}`  
-]);  
+    if (typeof doc.autoTable !== "function") {
+        alert("O plugin AutoTable do jsPDF não foi carregado.");
+        return;
+    }
 
-if (typeof doc.autoTable !== "function") {  
-    alert(  
-        "O plugin AutoTable do jsPDF não foi carregado."  
-    );  
+    doc.autoTable({
+        startY: 53,
 
-    return;  
-}  
+        head: [[
+            "Data",
+            "Cliente",
+            "Produtos",
+            "Pagamento",
+            "Status",
+            "Valor"
+        ]],
 
-doc.autoTable({  
-    startY: 53,  
+        body: tabela,
 
-    head: [[  
-        "Data",  
-        "Cliente",  
-        "Produtos",  
-        "Pagamento",  
-        "Status",  
-        "Valor"  
-    ]],  
+        theme: "grid",
 
-    body: tabela,  
+        styles: {
+            fontSize: 8,
+            cellPadding: 3
+        },
 
-    theme: "grid",  
+        headStyles: {
+            fontStyle: "bold"
+        },
 
-    styles: {  
-        fontSize: 8,  
-        cellPadding: 3  
-    },  
+        columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 90 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 30 },
+            5: { cellWidth: 30 }
+        },
 
-    headStyles: {  
-        fontStyle: "bold"  
-    },  
+        didDrawPage: () => {
+            const altura = doc.internal.pageSize.getHeight();
+            const largura = doc.internal.pageSize.getWidth();
 
-    columnStyles: {  
-        0: { cellWidth: 25 },  
-        1: { cellWidth: 40 },  
-        2: { cellWidth: 90 },  
-        3: { cellWidth: 30 },  
-        4: { cellWidth: 30 },  
-        5: { cellWidth: 30 }  
-    },  
+            doc.setFontSize(8);
 
-    didDrawPage: () => {  
-        const altura = doc.internal.pageSize.getHeight();  
+            doc.text(
+                "Mary Boutique — Relatório gerado pelo sistema",
+                14,
+                altura - 8
+            );
 
-        const largura = doc.internal.pageSize.getWidth();  
+            doc.text(
+                `Página ${doc.internal.getNumberOfPages()}`,
+                largura - 30,
+                altura - 8
+            );
+        }
+    });
 
-        doc.setFontSize(8);  
+    const inicio = reportStartDate?.value || "inicio";
+    const fim = reportEndDate?.value || "fim";
 
-        doc.text(  
-            "Mary Boutique — Relatório gerado pelo sistema",  
-            14,  
-            altura - 8  
-        );  
-
-        doc.text(  
-            `Página ${doc.internal.getNumberOfPages()}`,  
-            largura - 30,  
-            altura - 8  
-        );  
-    }  
-});  
-
-const inicio = reportStartDate?.value || "inicio";  
-const fim = reportEndDate?.value || "fim";  
-
-doc.save(  
-    `Mary-Boutique-Vendas-${inicio}-ate-${fim}.pdf`  
-);
-
+    doc.save(
+        `Mary-Boutique-Vendas-${inicio}-ate-${fim}.pdf`
+    );
 }
 
 // =====================================================
@@ -1990,44 +1795,44 @@ doc.save(
 // =====================================================
 
 function configurarEventosRelatorios() {
-elemento("open-report-button")?.addEventListener(
-"click",
-abrirModalRelatorio
-);
+    elemento("open-report-button")?.addEventListener(
+        "click",
+        abrirModalRelatorio
+    );
 
-elemento("close-report-modal")?.addEventListener(  
-    "click",  
-    fecharModalRelatorio  
-);  
+    elemento("close-report-modal")?.addEventListener(
+        "click",
+        fecharModalRelatorio
+    );
 
-reportModal?.addEventListener("click", event => {  
-    if (event.target === reportModal) {  
-        fecharModalRelatorio();  
-    }  
-});  
+    reportModal?.addEventListener("click", event => {
+        if (event.target === reportModal) {
+            fecharModalRelatorio();
+        }
+    });
 
-reportStartDate?.addEventListener(  
-    "change",  
-    atualizarPreviewRelatorio  
-);  
+    reportStartDate?.addEventListener(
+        "change",
+        atualizarPreviewRelatorio
+    );
 
-reportEndDate?.addEventListener(  
-    "change",  
-    atualizarPreviewRelatorio  
-);  
+    reportEndDate?.addEventListener(
+        "change",
+        atualizarPreviewRelatorio
+    );
 
-reportStatus?.addEventListener(  
-    "change",  
-    atualizarPreviewRelatorio  
-);  
+    reportStatus?.addEventListener(
+        "change",
+        atualizarPreviewRelatorio
+    );
 
-elemento("export-excel-button")?.addEventListener(  
-    "click",  
-    exportarExcel  
-);  
+    elemento("export-excel-button")?.addEventListener(
+        "click",
+        exportarExcel
+    );
 
-elemento("export-pdf-button")?.addEventListener(  
-    "click",  
-    exportarPDF  
-);  
-                }
+    elemento("export-pdf-button")?.addEventListener(
+        "click",
+        exportarPDF
+    );
+                       }
