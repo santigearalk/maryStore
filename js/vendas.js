@@ -51,8 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         await carregarProdutos();
         await carregarVendas();
         await atualizarResumo();
+        atualizarPreviewRelatorio();
     } catch (error) {
-        mostrarErro("Não foi possível carregar os dados. Atualize a página para tentar novamente.", error);
+        mostrarErro(
+            "Não foi possível carregar os dados. Atualize a página para tentar novamente.",
+            error
+        );
     }
 });
 
@@ -88,6 +92,7 @@ function escaparHTML(valor) {
 
 function numero(valor) {
     const resultado = Number(valor);
+
     return Number.isFinite(resultado) ? resultado : 0;
 }
 
@@ -124,11 +129,6 @@ function obterNomeProduto(produto) {
     return produto?.nome || produto?.name || "Produto";
 }
 
-function obterIdNumerico(id) {
-    const convertido = Number(id);
-    return Number.isFinite(convertido) ? convertido : id;
-}
-
 function mostrarErro(mensagem, erro) {
     console.error(mensagem, erro || "");
 
@@ -136,6 +136,21 @@ function mostrarErro(mensagem, erro) {
         erro?.message
             ? `${mensagem}\n\nDetalhes: ${erro.message}`
             : mensagem
+    );
+}
+
+function rpcAusente(error) {
+    return ["PGRST202", "42883"].includes(error?.code);
+}
+
+function vendaEstaPaga(venda) {
+    return venda?.status_pagamento === "pago";
+}
+
+function vendaEstaPendente(venda) {
+    return (
+        venda?.status_pagamento === "pendente" &&
+        venda?.forma_pagamento === "fiado"
     );
 }
 
@@ -230,6 +245,7 @@ async function carregarProdutos() {
 
 function adicionarProdutoVenda() {
     if (salvandoVenda) return;
+
     const produtoId = saleProduct?.value;
     const quantidade = Number(saleQuantity?.value);
 
@@ -263,7 +279,10 @@ function adicionarProdutoVenda() {
         : 0;
 
     if (quantidadeAtual + quantidade > estoque) {
-        alert(`Estoque insuficiente. Disponível: ${estoque} unidade(s).`);
+        alert(
+            `Estoque insuficiente. Disponível: ${estoque} unidade(s).`
+        );
+
         return;
     }
 
@@ -281,7 +300,10 @@ function adicionarProdutoVenda() {
     renderizarItens();
 
     saleProduct.value = "";
-    saleQuantity.value = 1;
+
+    if (saleQuantity) {
+        saleQuantity.value = 1;
+    }
 }
 
 // =====================================================
@@ -297,6 +319,7 @@ function renderizarItens() {
         `;
 
         atualizarTotal();
+
         return;
     }
 
@@ -306,11 +329,13 @@ function renderizarItens() {
         const subtotal = item.preco * item.quantidade;
 
         const div = document.createElement("div");
+
         div.className = "sale-item";
 
         div.innerHTML = `
             <div>
                 <strong>${escaparHTML(item.nome)}</strong>
+
                 <span>
                     ${item.quantidade} × R$ ${formatarMoeda(item.preco)}
                 </span>
@@ -342,11 +367,17 @@ function renderizarItens() {
 
 function removerItem(index) {
     if (salvandoVenda) return;
-    if (!Number.isInteger(index) || index < 0 || index >= itensVenda.length) {
+
+    if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= itensVenda.length
+    ) {
         return;
     }
 
     itensVenda.splice(index, 1);
+
     renderizarItens();
 }
 
@@ -356,14 +387,18 @@ function removerItem(index) {
 
 function calcularTotal() {
     const centavos = itensVenda.reduce((total, item) => {
-        return total + Math.round(numero(item.preco) * 100) * numero(item.quantidade);
+        const precoCentavos = Math.round(numero(item.preco) * 100);
+
+        return total + precoCentavos * numero(item.quantidade);
     }, 0);
+
     return centavos / 100;
 }
 
 function atualizarTotal() {
     if (saleTotal) {
-        saleTotal.textContent = `R$ ${formatarMoeda(calcularTotal())}`;
+        saleTotal.textContent =
+            `R$ ${formatarMoeda(calcularTotal())}`;
     }
 
     atualizarValorParcela();
@@ -389,14 +424,26 @@ function configurarParcelamento() {
     function atualizarVisibilidade() {
         const parcelado = formaPagamento.value === "parcelado";
 
-        opcoesParcelamento.style.display = parcelado ? "block" : "none";
+        opcoesParcelamento.style.display =
+            parcelado ? "block" : "none";
 
         atualizarValorParcela();
     }
 
-    formaPagamento.addEventListener("change", atualizarVisibilidade);
-    campoParcelas.addEventListener("change", atualizarValorParcela);
-    campoParcelas.addEventListener("input", atualizarValorParcela);
+    formaPagamento.addEventListener(
+        "change",
+        atualizarVisibilidade
+    );
+
+    campoParcelas.addEventListener(
+        "change",
+        atualizarValorParcela
+    );
+
+    campoParcelas.addEventListener(
+        "input",
+        atualizarValorParcela
+    );
 
     atualizarVisibilidade();
 }
@@ -420,18 +467,46 @@ function obterQuantidadeParcelas() {
 function calcularParcelas(total, quantidade) {
     const totalCentavos = Math.round(numero(total) * 100);
 
-    if (!Number.isInteger(quantidade) || quantidade < 1) {
+    if (
+        !Number.isInteger(quantidade) ||
+        quantidade < 1 ||
+        totalCentavos < 0
+    ) {
         return [];
     }
 
-    const valorBase = Math.floor(totalCentavos / quantidade);
+    const valorBase = Math.floor(
+        totalCentavos / quantidade
+    );
+
     const resto = totalCentavos % quantidade;
 
     return Array.from({ length: quantidade }, (_, index) => {
-        const centavos = valorBase + (index < resto ? 1 : 0);
+        const centavos =
+            valorBase + (index < resto ? 1 : 0);
 
         return centavos / 100;
     });
+}
+
+function obterResumoParcelas(total, quantidade) {
+    const parcelas = calcularParcelas(total, quantidade);
+
+    if (parcelas.length === 0) {
+        return "Parcelamento indisponível.";
+    }
+
+    const valoresUnicos = [...new Set(parcelas)];
+
+    if (valoresUnicos.length === 1) {
+        return `${quantidade}x de R$ ${formatarMoeda(parcelas[0])}`;
+    }
+
+    return (
+        `${quantidade} parcelas, de R$ ` +
+        `${formatarMoeda(Math.min(...parcelas))} a R$ ` +
+        `${formatarMoeda(Math.max(...parcelas))}`
+    );
 }
 
 function atualizarValorParcela() {
@@ -448,27 +523,23 @@ function atualizarValorParcela() {
     const quantidade = obterQuantidadeParcelas();
 
     if (!quantidade) {
-        campoValor.textContent = "Selecione entre 2 e 12 parcelas.";
+        campoValor.textContent =
+            "Selecione entre 2 e 12 parcelas.";
+
         return;
     }
 
     const total = calcularTotal();
 
     if (total <= 0) {
-        campoValor.textContent = "Adicione produtos para calcular as parcelas.";
+        campoValor.textContent =
+            "Adicione produtos para calcular as parcelas.";
+
         return;
     }
 
-    const parcelas = calcularParcelas(total, quantidade);
-    const valoresUnicos = [...new Set(parcelas)];
-
-    if (valoresUnicos.length === 1) {
-        campoValor.textContent =
-            `${quantidade}x de R$ ${formatarMoeda(parcelas[0])}`;
-    } else {
-        campoValor.textContent =
-            `${quantidade} parcelas: de R$ ${formatarMoeda(Math.min(...parcelas))} a R$ ${formatarMoeda(Math.max(...parcelas))}`;
-    }
+    campoValor.textContent =
+        obterResumoParcelas(total, quantidade);
 }
 
 // =====================================================
@@ -505,14 +576,15 @@ async function obterCliente(nome, telefone) {
         return cliente;
     }
 
-    const { data: novoCliente, error: erroCriacao } = await supabaseClient
-        .from("clientes")
-        .insert({
-            nome: nomeNormalizado,
-            telefone: telefone || null
-        })
-        .select()
-        .single();
+    const { data: novoCliente, error: erroCriacao } =
+        await supabaseClient
+            .from("clientes")
+            .insert({
+                nome: nomeNormalizado,
+                telefone: telefone || null
+            })
+            .select()
+            .single();
 
     if (erroCriacao) throw erroCriacao;
 
@@ -533,10 +605,17 @@ async function registrarVenda(event) {
         return;
     }
 
-    const nome = elemento("customer-name")?.value.trim() || "";
-    const telefone = elemento("customer-phone")?.value.trim() || "";
-    const formaPagamento = elemento("payment-method")?.value || "";
-    const observacao = elemento("sale-observation")?.value.trim() || "";
+    const nome =
+        elemento("customer-name")?.value.trim() || "";
+
+    const telefone =
+        elemento("customer-phone")?.value.trim() || "";
+
+    const formaPagamento =
+        elemento("payment-method")?.value || "";
+
+    const observacao =
+        elemento("sale-observation")?.value.trim() || "";
 
     if (!nome) {
         alert("Informe o nome do cliente.");
@@ -562,23 +641,40 @@ async function registrarVenda(event) {
         quantidadeParcelas = obterQuantidadeParcelas();
 
         if (!quantidadeParcelas) {
-            alert("Selecione uma quantidade entre 2 e 12 parcelas.");
+            alert(
+                "Selecione uma quantidade entre 2 e 12 parcelas."
+            );
+
+            return;
+        }
+
+        if (calcularTotal() <= 0) {
+            alert("O valor da venda precisa ser maior que zero.");
             return;
         }
     }
 
-    // Captura os itens antes de qualquer espera de rede.
     const itens = itensVenda.map(item => ({
         produto_id: item.produto_id,
         quantidade: item.quantidade
     }));
+
     const button = elemento("save-sale-button");
-    const controles = Array.from(saleForm?.elements || []).map(el => ({
-        el, disabled: el.disabled
+
+    const controles = Array.from(
+        saleForm?.elements || []
+    ).map(el => ({
+        el,
+        disabled: el.disabled
     }));
+
     let registrada = false;
+
     salvandoVenda = true;
-    controles.forEach(({ el }) => { el.disabled = true; });
+
+    controles.forEach(({ el }) => {
+        el.disabled = true;
+    });
 
     if (button) {
         button.disabled = true;
@@ -591,7 +687,6 @@ async function registrarVenda(event) {
         let resultado;
 
         if (formaPagamento === "parcelado") {
-            // Esta RPC precisa ser criada no Supabase.
             resultado = await supabaseClient.rpc(
                 "registrar_venda_parcelada",
                 {
@@ -614,44 +709,79 @@ async function registrarVenda(event) {
         }
 
         if (resultado.error) {
-            if (formaPagamento === "parcelado" && rpcAusente(resultado.error)) {
-                throw new Error("Parcelamento ainda não configurado no banco. Peça ao responsável para configurar registrar_venda_parcelada no Supabase.");
+            if (
+                formaPagamento === "parcelado" &&
+                rpcAusente(resultado.error)
+            ) {
+                throw new Error(
+                    "O parcelamento ainda não está configurado no banco. " +
+                    "Configure a função registrar_venda_parcelada no Supabase."
+                );
             }
+
             throw resultado.error;
         }
+
         registrada = true;
         itensVenda = [];
 
-        alert(
-            formaPagamento === "fiado"
-                ? "Fiado registrado com sucesso!"
-                : formaPagamento === "parcelado"
-                    ? "Venda parcelada registrada com sucesso!"
-                    : "Venda registrada com sucesso!"
-        );
+        if (formaPagamento === "fiado") {
+            alert("Fiado registrado com sucesso!");
+        } else if (formaPagamento === "parcelado") {
+            alert(
+                `Venda parcelada em ${quantidadeParcelas} vezes registrada com sucesso!\n\n` +
+                `Total: R$ ${formatarMoeda(calcularParcelasTotal(itens))}\n` +
+                `${obterResumoParcelas(calcularParcelasTotal(itens), quantidadeParcelas)}`
+            );
+        } else {
+            alert("Venda registrada com sucesso!");
+        }
 
         fecharModalVenda(true);
 
         await carregarProdutos();
         await carregarVendas();
         await atualizarResumo();
+
         atualizarPreviewRelatorio();
 
     } catch (error) {
         console.error("Erro ao registrar venda:", error);
 
-        alert(registrada
-            ? "A venda foi registrada, mas a tela não atualizou. Recarregue a página; não registre novamente."
-            : (error.message || "Não foi possível confirmar o registro. Recarregue e confira as vendas antes de tentar novamente."));
+        alert(
+            registrada
+                ? "A venda foi registrada, mas a tela não atualizou. Recarregue a página; não registre novamente."
+                : (
+                    error.message ||
+                    "Não foi possível confirmar o registro. Recarregue e confira as vendas antes de tentar novamente."
+                )
+        );
     } finally {
         salvandoVenda = false;
-        controles.forEach(({ el, disabled }) => { el.disabled = disabled; });
+
+        controles.forEach(({ el, disabled }) => {
+            el.disabled = disabled;
+        });
 
         if (button) {
             button.disabled = false;
             button.textContent = "Registrar venda";
         }
     }
+}
+
+function calcularParcelasTotal(itens) {
+    return itens.reduce((total, item) => {
+        const produto = produtos.find(
+            p => String(p.id) === String(item.produto_id)
+        );
+
+        if (!produto) return total;
+
+        return total +
+            Math.round(numero(produto.preco) * 100) *
+            numero(item.quantidade);
+    }, 0) / 100;
 }
 
 // =====================================================
@@ -665,10 +795,11 @@ async function carregarVendas() {
         `;
     }
 
-    const { data: vendasData, error: vendasError } = await supabaseClient
-        .from("vendas")
-        .select("*")
-        .order("criado_em", { ascending: false });
+    const { data: vendasData, error: vendasError } =
+        await supabaseClient
+            .from("vendas")
+            .select("*")
+            .order("criado_em", { ascending: false });
 
     if (vendasError) {
         console.error("Erro ao carregar vendas:", vendasError);
@@ -713,10 +844,11 @@ async function carregarVendas() {
 
     const vendaIds = vendasData.map(venda => venda.id);
 
-    const { data: itensData, error: itensError } = await supabaseClient
-        .from("itens_venda")
-        .select("*")
-        .in("venda_id", vendaIds);
+    const { data: itensData, error: itensError } =
+        await supabaseClient
+            .from("itens_venda")
+            .select("*")
+            .in("venda_id", vendaIds);
 
     if (itensError) {
         console.error("Erro ao carregar itens das vendas:", itensError);
@@ -753,7 +885,9 @@ async function carregarVendas() {
         ) || null;
 
         const itensDaVenda = itens
-            .filter(item => String(item.venda_id) === String(venda.id))
+            .filter(
+                item => String(item.venda_id) === String(venda.id)
+            )
             .map(item => {
                 const produto = produtosVenda.find(
                     p => String(p.id) === String(item.produto_id)
@@ -782,24 +916,28 @@ async function carregarVendas() {
 function renderizarVendas() {
     if (!salesList) return;
 
-    const pesquisa = (elemento("sales-search")?.value || "")
-        .toLowerCase()
-        .trim();
+    const pesquisa = (
+        elemento("sales-search")?.value || ""
+    ).toLowerCase().trim();
 
     let lista = [...vendas];
 
     if (abaAtual === "pendentes") {
-        lista = lista.filter(
-            venda => venda.status_pagamento === "pendente" && venda.forma_pagamento === "fiado"
-        );
+        lista = lista.filter(vendaEstaPendente);
     }
 
     if (pesquisa) {
         lista = lista.filter(venda => {
-            const nome = venda.clientes?.nome?.toLowerCase() || "";
-            const telefone = venda.clientes?.telefone || "";
+            const nome =
+                venda.clientes?.nome?.toLowerCase() || "";
 
-            return nome.includes(pesquisa) || telefone.includes(pesquisa);
+            const telefone =
+                venda.clientes?.telefone || "";
+
+            return (
+                nome.includes(pesquisa) ||
+                telefone.includes(pesquisa)
+            );
         });
     }
 
@@ -807,6 +945,7 @@ function renderizarVendas() {
         salesList.innerHTML = `
             <div class="empty-sales">Nenhuma venda encontrada.</div>
         `;
+
         return;
     }
 
@@ -817,22 +956,50 @@ function renderizarVendas() {
 
         card.className = "sale-card";
 
-        const nome = venda.clientes?.nome || "Cliente não informado";
+        const nome =
+            venda.clientes?.nome || "Cliente não informado";
+
         const data = formatarData(venda.criado_em);
-        const statusPago = venda.status_pagamento === "pago";
+
+        const statusPago = vendaEstaPaga(venda);
+
+        const quantidadeParcelas =
+            numero(venda.quantidade_parcelas);
+
+        const resumoParcelamento =
+            venda.forma_pagamento === "parcelado"
+                ? `
+                    <span class="sale-installments">
+                        ${quantidadeParcelas > 0
+                            ? `${quantidadeParcelas} parcelas`
+                            : "Venda parcelada"}
+                    </span>
+                `
+                : "";
 
         card.innerHTML = `
             <div class="sale-card-top">
                 <div>
-                    <span class="sale-client">${escaparHTML(nome)}</span>
+                    <span class="sale-client">
+                        ${escaparHTML(nome)}
+                    </span>
+
                     <small>${escaparHTML(data)}</small>
                 </div>
 
-                <strong>R$ ${formatarMoeda(venda.valor_total)}</strong>
+                <strong>
+                    R$ ${formatarMoeda(venda.valor_total)}
+                </strong>
             </div>
 
             <div class="sale-card-bottom">
-                <span>${escaparHTML(formatarPagamento(venda.forma_pagamento))}</span>
+                <div>
+                    <span>
+                        ${escaparHTML(formatarPagamento(venda.forma_pagamento))}
+                    </span>
+
+                    ${resumoParcelamento}
+                </div>
 
                 <span class="${statusPago ? "status-paid" : "status-pending"}">
                     ${statusPago ? "✓ Pago" : "● Não pago"}
@@ -840,7 +1007,9 @@ function renderizarVendas() {
             </div>
         `;
 
-        card.addEventListener("click", () => abrirDetalhes(venda));
+        card.addEventListener("click", () => {
+            abrirDetalhes(venda);
+        });
 
         salesList.appendChild(card);
     });
@@ -852,34 +1021,50 @@ function renderizarVendas() {
 
 function abrirDetalhes(venda) {
     if (excluindoVenda || atualizandoPagamento) return;
+
     vendaEmDetalhes = venda;
 
-    const nome = venda.clientes?.nome || "Cliente não informado";
-    const telefone = venda.clientes?.telefone || "Não informado";
+    const nome =
+        venda.clientes?.nome || "Cliente não informado";
+
+    const telefone =
+        venda.clientes?.telefone || "Não informado";
+
     const data = formatarData(venda.criado_em, true);
-    const pago = venda.status_pagamento === "pago";
+
+    const pago = vendaEstaPaga(venda);
 
     const detalhes = elemento("sale-details");
 
     if (!detalhes) return;
 
-    const itensHTML = (venda.itens_venda || []).map(item => {
-        const produto = item.produtos;
-        const nomeProduto = obterNomeProduto(produto);
+    const itensHTML = (venda.itens_venda || [])
+        .map(item => {
+            const produto = item.produtos;
 
-        return `
-            <div class="detail-item">
-                <div>
-                    <strong>${escaparHTML(nomeProduto)}</strong>
-                    <span>
-                        ${numero(item.quantidade)} × R$ ${formatarMoeda(item.preco_unitario)}
-                    </span>
+            const nomeProduto =
+                obterNomeProduto(produto);
+
+            return `
+                <div class="detail-item">
+                    <div>
+                        <strong>
+                            ${escaparHTML(nomeProduto)}
+                        </strong>
+
+                        <span>
+                            ${numero(item.quantidade)} ×
+                            R$ ${formatarMoeda(item.preco_unitario)}
+                        </span>
+                    </div>
+
+                    <strong>
+                        R$ ${formatarMoeda(item.subtotal)}
+                    </strong>
                 </div>
-
-                <strong>R$ ${formatarMoeda(item.subtotal)}</strong>
-            </div>
-        `;
-    }).join("");
+            `;
+        })
+        .join("");
 
     const observacaoHTML = venda.observacao
         ? `
@@ -905,16 +1090,55 @@ function abrirDetalhes(venda) {
         `
         : "";
 
-    const quantidadeParcelas = numero(venda.quantidade_parcelas);
+    const quantidadeParcelas =
+        numero(venda.quantidade_parcelas);
 
-    const informacaoParcelas = venda.forma_pagamento === "parcelado"
-        ? `
-            <p>
-                <strong>Parcelamento:</strong>
-                ${quantidadeParcelas > 0 ? `${quantidadeParcelas} parcelas` : "Registrado"}
-            </p>
-        `
-        : "";
+    let informacaoParcelas = "";
+
+    if (venda.forma_pagamento === "parcelado") {
+        if (quantidadeParcelas >= 2) {
+            const parcelas = calcularParcelas(
+                venda.valor_total,
+                quantidadeParcelas
+            );
+
+            const valoresUnicos = [...new Set(parcelas)];
+
+            const resumo = valoresUnicos.length === 1
+                ? `${quantidadeParcelas}x de R$ ${formatarMoeda(parcelas[0])}`
+                : `${quantidadeParcelas} parcelas, de R$ ${formatarMoeda(Math.min(...parcelas))} a R$ ${formatarMoeda(Math.max(...parcelas))}`;
+
+            informacaoParcelas = `
+                <div class="installment-details">
+                    <p>
+                        <strong>Quantidade de parcelas:</strong>
+                        ${quantidadeParcelas}x
+                    </p>
+
+                    <p>
+                        <strong>Valor das parcelas:</strong>
+                        ${escaparHTML(resumo)}
+                    </p>
+
+                    <div class="installment-list">
+                        ${parcelas.map((valor, index) => `
+                            <div class="installment-row">
+                                <span>Parcela ${index + 1}/${quantidadeParcelas}</span>
+                                <strong>R$ ${formatarMoeda(valor)}</strong>
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            `;
+        } else {
+            informacaoParcelas = `
+                <p>
+                    <strong>Parcelamento:</strong>
+                    Quantidade não informada
+                </p>
+            `;
+        }
+    }
 
     detalhes.innerHTML = `
         <span class="section-label">DETALHES DA VENDA</span>
@@ -922,8 +1146,16 @@ function abrirDetalhes(venda) {
         <h2>${escaparHTML(nome)}</h2>
 
         <div class="details-info">
-            <p><strong>Telefone:</strong> ${escaparHTML(telefone)}</p>
-            <p><strong>Data:</strong> ${escaparHTML(data)}</p>
+            <p>
+                <strong>Telefone:</strong>
+                ${escaparHTML(telefone)}
+            </p>
+
+            <p>
+                <strong>Data:</strong>
+                ${escaparHTML(data)}
+            </p>
+
             ${informacaoParcelas}
         </div>
 
@@ -935,11 +1167,16 @@ function abrirDetalhes(venda) {
 
         <div class="details-total">
             <span>Total</span>
-            <strong>R$ ${formatarMoeda(venda.valor_total)}</strong>
+
+            <strong>
+                R$ ${formatarMoeda(venda.valor_total)}
+            </strong>
         </div>
 
         <div class="details-payment">
-            <span>${escaparHTML(formatarPagamento(venda.forma_pagamento))}</span>
+            <span>
+                ${escaparHTML(formatarPagamento(venda.forma_pagamento))}
+            </span>
 
             <strong class="${pago ? "status-paid" : "status-pending"}">
                 ${pago ? "✓ PAGO" : "● NÃO PAGO"}
@@ -959,13 +1196,15 @@ function abrirDetalhes(venda) {
         </button>
     `;
 
-    elemento("mark-paid-button")?.addEventListener("click", () => {
-        marcarComoPago(venda.id);
-    });
+    elemento("mark-paid-button")?.addEventListener(
+        "click",
+        () => marcarComoPago(venda.id)
+    );
 
-    elemento("delete-sale-button")?.addEventListener("click", () => {
-        excluirVenda(venda.id);
-    });
+    elemento("delete-sale-button")?.addEventListener(
+        "click",
+        () => excluirVenda(venda.id)
+    );
 
     detailsModal?.classList.add("show");
 }
@@ -976,34 +1215,62 @@ function abrirDetalhes(venda) {
 
 async function marcarComoPago(vendaId) {
     if (atualizandoPagamento || excluindoVenda) return;
-    if (!confirm("Confirmar o recebimento integral desta venda?")) return;
+
+    if (
+        !confirm(
+            "Confirmar o recebimento integral desta venda?"
+        )
+    ) {
+        return;
+    }
+
     atualizandoPagamento = true;
+
     const botao = elemento("mark-paid-button");
-    if (botao) botao.disabled = true;
+
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "Atualizando...";
+    }
+
     let confirmado = false;
+
     try {
-        const { error } = await supabaseClient.rpc("marcar_venda_paga", {
-            p_venda_id: vendaId
-        });
+        const { error } = await supabaseClient.rpc(
+            "marcar_venda_paga",
+            {
+                p_venda_id: vendaId
+            }
+        );
+
         if (error) throw error;
+
         confirmado = true;
+
         alert("Venda marcada como paga!");
+
         fecharDetalhes(true);
+
         await carregarVendas();
         await atualizarResumo();
+
         atualizarPreviewRelatorio();
+
     } catch (error) {
-        mostrarErro(confirmado
-            ? "Pagamento salvo, mas a tela não atualizou. Recarregue a página."
-            : "Não foi possível confirmar o pagamento. Confira a venda antes de tentar novamente.", error);
+        mostrarErro(
+            confirmado
+                ? "Pagamento salvo, mas a tela não atualizou. Recarregue a página."
+                : "Não foi possível confirmar o pagamento. Confira a venda antes de tentar novamente.",
+            error
+        );
     } finally {
         atualizandoPagamento = false;
-        if (botao) botao.disabled = false;
-    }
-}
 
-function rpcAusente(error) {
-    return ["PGRST202", "42883"].includes(error?.code);
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = "✓ Marcar venda inteira como paga";
+        }
+    }
 }
 
 // =====================================================
@@ -1022,7 +1289,8 @@ async function excluirVenda(vendaId) {
         return;
     }
 
-    const cliente = venda.clientes?.nome || "Cliente não informado";
+    const cliente =
+        venda.clientes?.nome || "Cliente não informado";
 
     const confirmar = confirm(
         `Deseja excluir esta venda?\n\n` +
@@ -1034,6 +1302,7 @@ async function excluirVenda(vendaId) {
     if (!confirmar) return;
 
     excluindoVenda = true;
+
     let excluida = false;
 
     const botao = elemento("delete-sale-button");
@@ -1044,7 +1313,6 @@ async function excluirVenda(vendaId) {
     }
 
     try {
-        // A RPC deve tratar a exclusão dos itens e a política de estoque.
         const { error } = await supabaseClient.rpc(
             "excluir_venda",
             {
@@ -1054,11 +1322,17 @@ async function excluirVenda(vendaId) {
 
         if (error) {
             if (rpcAusente(error)) {
-                throw new Error("Exclusão ainda não configurada no banco. Peça ao responsável para configurar excluir_venda no Supabase, incluindo itens e estoque.");
+                throw new Error(
+                    "Exclusão ainda não configurada no banco. " +
+                    "Configure excluir_venda no Supabase, incluindo os itens e o estoque."
+                );
             }
+
             throw error;
         }
+
         excluida = true;
+
         alert("Venda excluída com sucesso!");
 
         fecharDetalhes(true);
@@ -1066,6 +1340,7 @@ async function excluirVenda(vendaId) {
         await carregarProdutos();
         await carregarVendas();
         await atualizarResumo();
+
         atualizarPreviewRelatorio();
 
     } catch (error) {
@@ -1101,7 +1376,10 @@ async function atualizarResumo() {
     const vendasHoje = vendas.filter(venda => {
         const data = new Date(venda.criado_em);
 
-        return !Number.isNaN(data.getTime()) && data >= inicio;
+        return (
+            !Number.isNaN(data.getTime()) &&
+            data >= inicio
+        );
     });
 
     const totalHoje = vendasHoje.reduce(
@@ -1109,9 +1387,7 @@ async function atualizarResumo() {
         0
     );
 
-    const pendentes = vendas.filter(
-        venda => venda.status_pagamento === "pendente" && venda.forma_pagamento === "fiado"
-    );
+    const pendentes = vendas.filter(vendaEstaPendente);
 
     const totalPendente = pendentes.reduce(
         (total, venda) => total + numero(venda.valor_total),
@@ -1129,6 +1405,7 @@ async function atualizarResumo() {
 
 function abrirModalVenda() {
     if (salvandoVenda) return;
+
     itensVenda = [];
 
     saleForm?.reset();
@@ -1147,19 +1424,29 @@ function configurarVisibilidadeParcelamento() {
     if (!pagamento || !opcoes) return;
 
     opcoes.style.display =
-        pagamento.value === "parcelado" ? "block" : "none";
+        pagamento.value === "parcelado"
+            ? "block"
+            : "none";
 
     atualizarValorParcela();
 }
 
 function fecharModalVenda(forcar = false) {
     if (salvandoVenda && forcar !== true) return;
+
     saleModal?.classList.remove("show");
 }
 
 function fecharDetalhes(forcar = false) {
-    if ((excluindoVenda || atualizandoPagamento) && forcar !== true) return;
+    if (
+        (excluindoVenda || atualizandoPagamento) &&
+        forcar !== true
+    ) {
+        return;
+    }
+
     detailsModal?.classList.remove("show");
+
     vendaEmDetalhes = null;
 }
 
@@ -1168,8 +1455,10 @@ function fecharDetalhes(forcar = false) {
 // =====================================================
 
 function configurarEventos() {
-    // O seletor fica vazio após adicionar ao carrinho. O carrinho é validado no submit.
-    if (saleProduct) saleProduct.required = false;
+    if (saleProduct) {
+        saleProduct.required = false;
+    }
+
     elemento("open-sale-button")?.addEventListener(
         "click",
         abrirModalVenda
@@ -1191,16 +1480,24 @@ function configurarEventos() {
     );
 
     saleItems?.addEventListener("click", event => {
-        const botao = event.target.closest("[data-remover-item]");
+        const botao = event.target.closest(
+            "[data-remover-item]"
+        );
 
         if (!botao) return;
 
         removerItem(Number(botao.dataset.removerItem));
     });
 
-    saleForm?.addEventListener("submit", registrarVenda);
+    saleForm?.addEventListener(
+        "submit",
+        registrarVenda
+    );
 
-    elemento("logout-button")?.addEventListener("click", sair);
+    elemento("logout-button")?.addEventListener(
+        "click",
+        sair
+    );
 
     elemento("sales-search")?.addEventListener(
         "input",
@@ -1264,6 +1561,7 @@ function formatarPagamento(pagamento) {
 
 function abrirModalRelatorio() {
     const hoje = new Date();
+
     const hojeFormatado = dataLocalISO(hoje);
 
     if (reportStartDate && !reportStartDate.value) {
@@ -1312,14 +1610,14 @@ function obterVendasRelatorio() {
 
         if (
             status === "pagas" &&
-            venda.status_pagamento !== "pago"
+            !vendaEstaPaga(venda)
         ) {
             return false;
         }
 
         if (
             status === "pendentes" &&
-            (venda.status_pagamento !== "pendente" || venda.forma_pagamento !== "fiado")
+            !vendaEstaPendente(venda)
         ) {
             return false;
         }
@@ -1341,7 +1639,7 @@ function atualizarPreviewRelatorio() {
     );
 
     const pendente = lista.reduce((soma, venda) => {
-        if (venda.status_pagamento === "pendente" && venda.forma_pagamento === "fiado") {
+        if (vendaEstaPendente(venda)) {
             return soma + numero(venda.valor_total);
         }
 
@@ -1373,12 +1671,26 @@ function prepararDadosRelatorio() {
             })
             .join(", ");
 
+        const quantidadeParcelas =
+            numero(venda.quantidade_parcelas);
+
+        let pagamento = formatarPagamento(
+            venda.forma_pagamento
+        );
+
+        if (
+            venda.forma_pagamento === "parcelado" &&
+            quantidadeParcelas > 0
+        ) {
+            pagamento += ` (${quantidadeParcelas} parcelas)`;
+        }
+
         return {
             data: formatarData(venda.criado_em),
             cliente: venda.clientes?.nome || "Não informado",
             produtos: produtosTexto,
-            pagamento: formatarPagamento(venda.forma_pagamento),
-            status: venda.status_pagamento === "pago"
+            pagamento,
+            status: vendaEstaPaga(venda)
                 ? "Pago"
                 : "Não pago",
             valor: numero(venda.valor_total)
@@ -1399,7 +1711,10 @@ function exportarExcel() {
     const dados = prepararDadosRelatorio();
 
     if (dados.length === 0) {
-        alert("Nenhuma venda encontrada para o período selecionado.");
+        alert(
+            "Nenhuma venda encontrada para o período selecionado."
+        );
+
         return;
     }
 
@@ -1445,7 +1760,7 @@ function exportarExcel() {
         { wch: 14 },
         { wch: 25 },
         { wch: 45 },
-        { wch: 15 },
+        { wch: 25 },
         { wch: 15 },
         { wch: 15 }
     ];
@@ -1480,7 +1795,10 @@ function exportarPDF() {
     const dados = prepararDadosRelatorio();
 
     if (dados.length === 0) {
-        alert("Nenhuma venda encontrada para o período selecionado.");
+        alert(
+            "Nenhuma venda encontrada para o período selecionado."
+        );
+
         return;
     }
 
@@ -1518,6 +1836,7 @@ function exportarPDF() {
     doc.text("Relatório de Vendas", 14, 27);
 
     doc.setFontSize(9);
+
     doc.text(
         `Período: ${reportStartDate?.value || "Todos"} até ${reportEndDate?.value || "Todos"}`,
         14,
@@ -1525,10 +1844,26 @@ function exportarPDF() {
     );
 
     doc.setFontSize(10);
+
     doc.text(`Vendas: ${dados.length}`, 14, 45);
-    doc.text(`Total vendido: R$ ${formatarMoeda(total)}`, 70, 45);
-    doc.text(`Recebido: R$ ${formatarMoeda(recebido)}`, 145, 45);
-    doc.text(`Valores não pagos: R$ ${formatarMoeda(pendente)}`, 215, 45);
+
+    doc.text(
+        `Total vendido: R$ ${formatarMoeda(total)}`,
+        70,
+        45
+    );
+
+    doc.text(
+        `Recebido: R$ ${formatarMoeda(recebido)}`,
+        145,
+        45
+    );
+
+    doc.text(
+        `Valores não pagos: R$ ${formatarMoeda(pendente)}`,
+        215,
+        45
+    );
 
     const tabela = dados.map(venda => [
         venda.data,
@@ -1540,7 +1875,10 @@ function exportarPDF() {
     ]);
 
     if (typeof doc.autoTable !== "function") {
-        alert("O plugin AutoTable do jsPDF não foi carregado.");
+        alert(
+            "O plugin AutoTable do jsPDF não foi carregado."
+        );
+
         return;
     }
 
@@ -1580,6 +1918,7 @@ function exportarPDF() {
 
         didDrawPage: () => {
             const altura = doc.internal.pageSize.getHeight();
+
             const largura = doc.internal.pageSize.getWidth();
 
             doc.setFontSize(8);
@@ -1651,4 +1990,4 @@ function configurarEventosRelatorios() {
         "click",
         exportarPDF
     );
-}
+                    }
