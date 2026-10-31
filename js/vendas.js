@@ -1001,7 +1001,7 @@ function abrirDetalhes(venda) {
     const quantidadeParcelas = numero(venda.quantidade_parcelas);
     let informacaoParcelas = "";
 
-    if (venda.forma_pagamento === "parcelado") {
+    if (["parcelado", "cartao_parcelado"].includes(venda.forma_pagamento)) {
         if (quantidadeParcelas >= 2) {
             const parcelas = calcularParcelas(
                 venda.valor_total,
