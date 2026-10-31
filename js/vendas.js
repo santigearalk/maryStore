@@ -964,18 +964,12 @@ function renderizarVendas() {
         const statusPago = vendaEstaPaga(venda);
 
         const quantidadeParcelas =
-            numero(venda.quantidade_parcelas);
+Number(venda.quantidade_parcelas) || 0;
 
-        const resumoParcelamento =
-            venda.forma_pagamento === "parcelado"
-                ? `
-                    <span class="sale-installments">
-                        ${quantidadeParcelas > 0
-                            ? `${quantidadeParcelas} parcelas`
-                            : "Venda parcelada"}
-                    </span>
-                `
-                : "";
+const resumoParcelamento =
+venda.forma_pagamento === "parcelado"
+? "<span class="sale-installments"> ${ quantidadeParcelas >= 2 ?"💳 ${quantidadeParcelas}x": "💳 Venda parcelada" } </span>"
+: "";
 
         card.innerHTML = `
             <div class="sale-card-top">
